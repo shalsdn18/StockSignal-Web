@@ -1,0 +1,36 @@
+name: Deploy Marp slides to GitHub Pages
+
+on:
+  push:
+    branches: [main] # main 브랜치에 코드가 올라올 때 실행
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Marp slide
+        uses: marp-team/marp-cli-action@v1.1.2
+        with:
+          # presentation.md 파일을 index.html로 변환 (기본 페이지로 설정)
+          args: presentation.md -o index.html
+        env:
+          MARP_USER: root:root
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.' # 변환된 index.html이 있는 위치
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
