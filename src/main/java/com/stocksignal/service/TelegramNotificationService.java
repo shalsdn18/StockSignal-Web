@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Service for sending notifications via the Telegram Bot API.
  *
@@ -48,8 +51,8 @@ public class TelegramNotificationService {
             return;
         }
         try {
-            String url = String.format(TELEGRAM_API_URL, botToken, chatId,
-                    message.replace(" ", "%20"));
+            String encodedMessage = URLEncoder.encode(message, StandardCharsets.UTF_8);
+            String url = String.format(TELEGRAM_API_URL, botToken, chatId, encodedMessage);
             restTemplate.getForObject(url, String.class);
             log.info("Telegram notification sent: {}", message);
         } catch (RestClientException e) {
