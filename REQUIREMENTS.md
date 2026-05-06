@@ -48,7 +48,30 @@
 ```
 [사용자] <──> [웹 브라우저 (UI)] <──> [Spring Boot Server] <──> [MySQL DB (조회)]
 ```
-## MVC 패턴에 입각한 내용 정리
+## MVC 디자인 패턴 상세 설계
+Spring Boot 표준 아키텍처에 따라 계층을 분리하고 각 요구사항(REQ)을 매핑하였습니다.
+
+### 1) View (Presentation Layer)
+- **역할**: 사용자 접점 및 데이터 시각화 (Thymeleaf, Bootstrap 활용)
+- **주요 구성**:
+  - **메인 대시보드**: 실시간 신호 요약 및 승률 통계 (REQ-F-004, REQ-F-012, REQ-U-001)
+  - **신호 리스트**: 검색/정렬 기능이 포함된 이력 화면 (REQ-F-005, REQ-F-007)
+  - **모닝 브리핑 탭**: 일일 시장 요약 리포트 조회 (REQ-F-009)
+  - **공통 UI**: 반응형 사이드바 및 상태 알림 토스트 (REQ-U-002, REQ-U-004, REQ-U-005)
+
+### 2) Controller (Control Layer)
+- **역할**: HTTP 요청 매핑 및 서비스 호출 제어
+- **주요 클래스**:
+  - **AccountController**: 회원가입 및 로그인 흐름 제어 (REQ-F-013)
+  - **SignalController**: 신호 데이터 조회, 검색, 삭제 요청 처리 (REQ-F-005, REQ-F-011)
+  - **SettingController**: 유저별 텔레그램 API 설정 관리 (REQ-F-014)
+
+### 3) Model & Service (Business & Data Layer)
+- **역할**: 핵심 비즈니스 로직 처리 및 DB 연동
+- **주요 구성**:
+  - **Service**: 신호 파싱 유틸(REQ-F-001), 브리핑 생성 엔진(REQ-F-008), 알림 전송 로직(REQ-F-003)
+  - **Repository**: MySQL 연동 및 CRUD 인터페이스 (REQ-F-002)
+  - **Entity**: 데이터 객체 정의 (StockSignal, User, MorningBriefing 등)
 
 ## 데이터베이스 설계 (ERD 요약)
 
@@ -63,14 +86,16 @@
 ## 링크 
 https://www.figma.com/make/YFBTRYNRjZ4XecQISpKTlo/StockSignal-Web-Dashboard-Design?p=f&t=wWjSiEnqR3TZas6Z-0&fullscreen=1
 ## 로그인 화면
-![alt text](image.png)
+<img width="2552" height="1330" alt="image" src="https://github.com/user-attachments/assets/af130f20-717a-4cb3-945b-23aea2227220" />
+
 ## 회원가입 화면
-![alt text](image-1.png)
+<img width="2547" height="1332" alt="image" src="https://github.com/user-attachments/assets/a6fdea29-93e1-47ad-8cf0-32d35a6cb09d" />
+
 ## 홈 화면
-![alt text](image-2.png)
+<img width="2553" height="1317" alt="image" src="https://github.com/user-attachments/assets/a9a88194-3ac9-4756-99b4-51e574560b10" />
+
 ## 모닝 브리핑 화면
-![alt text](image-3.png)
-## 모닝 브리핑 화면
-![alt text](image-4.png)
+<img width="2550" height="1339" alt="image" src="https://github.com/user-attachments/assets/52ce903d-476a-48c1-be16-032a23134580" />
+
 ## 설정 화면
-![alt text](image-5.png)
+<img width="2547" height="1330" alt="image" src="https://github.com/user-attachments/assets/46d23e4e-74ee-43e7-9df3-2346c38d0d42" />
