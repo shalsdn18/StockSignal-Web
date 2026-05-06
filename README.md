@@ -104,22 +104,51 @@
 
 ## 2. 시스템 설계 (System Design)
 
-### 2.1 MVC 디자인 패턴 적용
-- **Model**: StockSignal, User, MorningBriefing 데이터 객체(DTO/Entity) 및 DB 접근 로직(DAO/Repository)
-- **Service**: 주가 분석 알고리즘, 텔레그램 메시지 전송 로직, 브리핑 생성 비즈니스 로직 처리
-- **View**: JSP와 Thymeleaf를 활용한 웹 화면 구성, Bootstrap을 통한 반응형 레이아웃 구현
-- **Controller**: 사용자 요청을 받아 서비스를 호출하고 적절한 뷰 페이지로 결과 전달(Forwarding)
+### 2.1 데이터 흐름도 (Data Flow Diagram)
 
-### 2.2 데이터베이스 설계 (주요 필드)
-- **signals (신호 이력)**: id(PK), stock_name, price, signal_type, created_at
-- **morning_briefings (브리핑)**: id(PK), content, market_status, publish_date
-- **users (사용자)**: id(PK), name, email, telegram_chat_id, password
-- **settings (설정)**: id(PK), user_id, telegram_token, target_stocks
+**[데이터 수집 및 적재]**
+외부 파이썬 봇 → Telegram API → Spring Boot 서버 (수신 및 가공) → MySQL DB (저장)
 
-### 2.3 화면 설계 및 UI 요소
-- **메인 대시보드**: 실시간 신호 요약 및 통계 대시보드
-- **신호 리스트**: 검색 및 정렬 기능이 포함된 과거 이력 조회 화면
-- **설정 페이지**: 텔레그램 토큰 및 알림 종목 관리 화면
+**[서비스 제공 및 조회]**
+사용자 ↔ 웹 브라우저(UI) ↔ Spring Boot 서버 (비즈니스 로직) ↔ MySQL DB (조회)
+
+### 2.2 MVC 디자인 패턴 상세 설계
+Spring Boot 표준 아키텍처에 따라 계층을 분리하고 각 요구사항(REQ)을 매핑하였습니다.
+
+#### 1) View (Presentation Layer)
+- **역할**: 사용자 접점 및 데이터 시각화 (Thymeleaf, Bootstrap 활용)
+- **주요 구성**:
+  - **메인 대시보드**: 실시간 신호 요약 및 승률 통계 (REQ-F-004, REQ-F-012, REQ-U-001)
+  - **신호 리스트**: 검색/정렬 기능이 포함된 이력 화면 (REQ-F-005, REQ-F-007)
+  - **모닝 브리핑 탭**: 일일 시장 요약 리포트 조회 (REQ-F-009)
+  - **공통 UI**: 반응형 사이드바 및 상태 알림 토스트 (REQ-U-002, REQ-U-004, REQ-U-005)
+
+#### 2) Controller (Control Layer)
+- **역할**: HTTP 요청 매핑 및 서비스 호출 제어
+- **주요 클래스**:
+  - **AccountController**: 회원가입 및 로그인 흐름 제어 (REQ-F-013)
+  - **SignalController**: 신호 데이터 조회, 검색, 삭제 요청 처리 (REQ-F-005, REQ-F-011)
+  - **SettingController**: 유저별 텔레그램 API 설정 관리 (REQ-F-014)
+
+#### 3) Model & Service (Business & Data Layer)
+- **역할**: 핵심 비즈니스 로직 처리 및 DB 연동
+- **주요 구성**:
+  - **Service**: 신호 파싱 유틸(REQ-F-001), 브리핑 생성 엔진(REQ-F-008), 알림 전송 로직(REQ-F-003)
+  - **Repository**: MySQL 연동 및 CRUD 인터페이스 (REQ-F-002)
+  - **Entity**: 데이터 객체 정의 (StockSignal, User, MorningBriefing 등)
+
+### 2.3 데이터베이스 설계 (Database Schema)
+
+| 테이블명 | 주요 필드 (Field Name) | 비고 |
+| :--- | :--- | :--- |
+| **users** | id(PK), email, password, name, telegram_chat_id | 사용자 정보 |
+| **signals** | id(PK), stock_name, price, signal_type, created_at | 매매 신호 이력 |
+| **morning_briefings** | id(PK), content, market_status, publish_date | 일일 브리핑 데이터 |
+| **settings** | id(PK), user_id(FK), telegram_token, target_stocks | 개인 설정 |
+
+### 2.4 화면 설계 (Wireframe)
+*(여기에 직접 그리신 설계도 사진을 업로드하고 링크를 거세요)*
+![시스템 화면 설계도](./docs/images/wireframe.jpg)
 
 ---
 
