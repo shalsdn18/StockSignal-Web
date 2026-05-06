@@ -157,7 +157,7 @@ https://www.figma.com/make/YFBTRYNRjZ4XecQISpKTlo/StockSignal-Web-Dashboard-Desi
 ## 홈 화면
 <img width="2553" height="1317" alt="image" src="https://github.com/user-attachments/assets/a9a88194-3ac9-4756-99b4-51e574560b10" />
 
-## 신호 이력 화면
+## 모닝 브리핑 화면
 <img width="2550" height="1339" alt="image" src="https://github.com/user-attachments/assets/52ce903d-476a-48c1-be16-032a23134580" />
 
 ## 설정 화면
