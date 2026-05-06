@@ -90,6 +90,18 @@
 ## 2. 시스템 설계 (System Design)
 
 ### 2.1 데이터 흐름도 (Data Flow Diagram)
+## 아키텍처 다이어그램
+### [데이터 수집]
+``` 
+[외부 파이썬 봇] ──> [Telegram API] ──> [Spring Boot Server] ──> [MySQL DB (저장)]
+```
+
+### [서비스 제공]
+```
+[사용자] <──> [웹 브라우저 (UI)] <──> [Spring Boot Server] <──> [MySQL DB (조회)]
+```
+## MVC 패턴에 입각한 내용 정리
+
 
 **[데이터 수집 및 적재]**
 외부 파이썬 봇 → Telegram API → Spring Boot 서버 (수신 및 가공) → MySQL DB (저장)
