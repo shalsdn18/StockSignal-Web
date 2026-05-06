@@ -48,6 +48,7 @@
 ```
 [사용자] <──> [웹 브라우저 (UI)] <──> [Spring Boot Server] <──> [MySQL DB (조회)]
 ```
+## MVC 패턴에 입각한 내용 정리
 
 ## 데이터베이스 설계 (ERD 요약)
 
@@ -58,3 +59,18 @@
 | morning_briefings | id, title, content, market_status, published_at |
 | signal_memos | id, signal_id, user_id, memo_content, updated_at |
 
+# 3. 화면 설계 (Wireframe)
+## 링크 
+https://www.figma.com/make/YFBTRYNRjZ4XecQISpKTlo/StockSignal-Web-Dashboard-Design?p=f&t=wWjSiEnqR3TZas6Z-0&fullscreen=1
+## 로그인 화면
+![alt text](image.png)
+## 회원가입 화면
+![alt text](image-1.png)
+## 홈 화면
+![alt text](image-2.png)
+## 신호 이력 화면
+![alt text](image-3.png)
+## 모닝 브리핑 화면
+![alt text](image-4.png)
+## 설정 화면
+![alt text](image-5.png)
