@@ -49,6 +49,12 @@
 [사용자] <──> [웹 브라우저 (UI)] <──> [Spring Boot Server] <──> [MySQL DB (조회)]
 ```
 
-## 데이터베이스 설계
+## 데이터베이스 설계 (ERD 요약)
 
+| 테이블명 | 주요 칼럼 |
+| --- | --- |
+| users | id, username, password, email, telegram_chat_id, telegram_bot_token, created_at |
+| stock_signals | id, user_id, stock_name, stock_code, signal_type, price, raw_message, created_at |
+| morning_briefings | id, title, content, market_status, published_at |
+| signal_memos | id, signal_id, user_id, memo_content, updated_at |
 
