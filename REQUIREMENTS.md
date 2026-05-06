@@ -63,14 +63,16 @@
 ## 링크 
 https://www.figma.com/make/YFBTRYNRjZ4XecQISpKTlo/StockSignal-Web-Dashboard-Design?p=f&t=wWjSiEnqR3TZas6Z-0&fullscreen=1
 ## 로그인 화면
-![alt text](image.png)
+<img width="2552" height="1330" alt="image" src="https://github.com/user-attachments/assets/af130f20-717a-4cb3-945b-23aea2227220" />
+
 ## 회원가입 화면
-![alt text](image-1.png)
+<img width="2547" height="1332" alt="image" src="https://github.com/user-attachments/assets/a6fdea29-93e1-47ad-8cf0-32d35a6cb09d" />
+
 ## 홈 화면
-![alt text](image-2.png)
+<img width="2553" height="1317" alt="image" src="https://github.com/user-attachments/assets/a9a88194-3ac9-4756-99b4-51e574560b10" />
+
 ## 신호 이력 화면
-![alt text](image-3.png)
-## 모닝 브리핑 화면
-![alt text](image-4.png)
+<img width="2550" height="1339" alt="image" src="https://github.com/user-attachments/assets/52ce903d-476a-48c1-be16-032a23134580" />
+
 ## 설정 화면
-![alt text](image-5.png)
+<img width="2547" height="1330" alt="image" src="https://github.com/user-attachments/assets/46d23e4e-74ee-43e7-9df3-2346c38d0d42" />
