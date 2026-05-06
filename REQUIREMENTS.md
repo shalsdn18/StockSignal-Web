@@ -68,7 +68,7 @@ https://www.figma.com/make/YFBTRYNRjZ4XecQISpKTlo/StockSignal-Web-Dashboard-Desi
 ![alt text](image-1.png)
 ## 홈 화면
 ![alt text](image-2.png)
-## 신호 이력 화면
+## 모닝 브리핑 화면
 ![alt text](image-3.png)
 ## 모닝 브리핑 화면
 ![alt text](image-4.png)
