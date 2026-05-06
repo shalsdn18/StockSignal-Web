@@ -90,6 +90,18 @@
 ## 2. 시스템 설계 (System Design)
 
 ### 2.1 데이터 흐름도 (Data Flow Diagram)
+## 아키텍처 다이어그램
+### [데이터 수집]
+``` 
+[외부 파이썬 봇] ──> [Telegram API] ──> [Spring Boot Server] ──> [MySQL DB (저장)]
+```
+
+### [서비스 제공]
+```
+[사용자] <──> [웹 브라우저 (UI)] <──> [Spring Boot Server] <──> [MySQL DB (조회)]
+```
+## MVC 패턴에 입각한 내용 정리
+
 
 **[데이터 수집 및 적재]**
 외부 파이썬 봇 → Telegram API → Spring Boot 서버 (수신 및 가공) → MySQL DB (저장)
@@ -145,7 +157,7 @@ https://www.figma.com/make/YFBTRYNRjZ4XecQISpKTlo/StockSignal-Web-Dashboard-Desi
 ## 홈 화면
 <img width="2553" height="1317" alt="image" src="https://github.com/user-attachments/assets/a9a88194-3ac9-4756-99b4-51e574560b10" />
 
-## 신호 이력 화면
+## 모닝 브리핑 화면
 <img width="2550" height="1339" alt="image" src="https://github.com/user-attachments/assets/52ce903d-476a-48c1-be16-032a23134580" />
 
 ## 설정 화면
