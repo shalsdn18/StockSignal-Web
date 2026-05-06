@@ -37,8 +37,8 @@
 
 | 이름 | 학번 | 역할 |
 |---|---|---|
-| 노민우 | 20210579 | 팀장 / 백엔드 / API 설계 / DB 설계 |
-| 전지훈 | 20213051 | 프론트엔드 / UI 구현 / 테스트 및 문서화 |
+| 노민우 | 20210579 | 팀장 / 백엔드 / API 설계 / 테스트 및 문서화 |
+| 전지훈 | 20213051 | 프론트엔드 / UI 구현 / DB 설계 |
  
 ---
 
@@ -90,12 +90,16 @@
 
 | 기능 ID | 기능 명칭 | 연결된 Issue | 상태 |
 | :--- | :--- | :--- | :--- |
-| **F-01** | 실시간 주식 데이터 수집 및 DB 저장 | #1 | ⚪ 대기  |
-| **F-02** | 텔레그램 실시간 알림 재전송 및 설정 | #2 | ⚪ 대기 |
-| **F-03** | 사용자 회원가입/로그인 및 보안 시스템 | #3 | ⚪ 대기 |
-| **F-04** | 신호 이력 조회 대시보드 및 상세 검색 UI | #4 | ⚪ 대기 |
-| **F-05** | 모닝 브리핑 자동 생성 및 대시보드 통계 | #5 | ⚪ 대기 |
-| **F-06** | 투자 메모 작성 기능 및 반응형 UI 개선 | #6 | ⚪ 대기 |
+| **F-01** | 실시간 주식 데이터 수집 및 DB 저장 | [#1](https://github.com/shalsdn18/StockSignal-Web/issues/5) | ⚪ 대기 |
+| **F-02** | 텔레그램 실시간 알림 재전송 및 설정 | [#2](https://github.com/shalsdn18/StockSignal-Web/issues/6) | ⚪ 대기 |
+| **F-03** | 사용자 회원가입/로그인 및 보안 시스템 | [#3](https://github.com/shalsdn18/StockSignal-Web/issues/7) | ⚪ 대기 |
+| **F-04** | 신호 이력 조회 대시보드 및 상세 검색 UI | [#4](https://github.com/shalsdn18/StockSignal-Web/issues/8) | ⚪ 대기 |
+| **F-05** | 모닝 브리핑 자동 생성 및 대시보드 통계 | [#5](https://github.com/shalsdn18/StockSignal-Web/issues/9) | ⚪ 대기 |
+| **F-06** | 투자 메모 작성 기능 및 반응형 UI 개선 | [#6](https://github.com/shalsdn18/StockSignal-Web/issues/10) | ⚪ 대기 |
+| **U-01** | 반응형 레이아웃 및 내비게이션 시스템 구축 | [#7](https://github.com/shalsdn18/StockSignal-Web/issues/11) | ⚪ 대기 |
+| **NF-01** | 사용자 보안(암호화) 및 MVC 아키텍처 준수 | [#8](https://github.com/shalsdn18/StockSignal-Web/issues/12) | ⚪ 대기 |
+| **NF-02** | API 성능 최적화 및 시스템 로그 관리 체계 | [#9](https://github.com/shalsdn18/StockSignal-Web/issues/13) | ⚪ 대기 |
+| **NF-03** | CI/CD 배포 자동화 및 브라우저 호환성 검증 | [#10](https://github.com/shalsdn18/StockSignal-Web/issues/14) | ⚪ 대기 |
 ---
 
 ## 2. 시스템 설계 (System Design)
