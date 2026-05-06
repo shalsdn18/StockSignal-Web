@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>StockSignal — Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<header class="site-header">
+    <div class="container">
+        <h1>📈 StockSignal Dashboard</h1>
+        <p class="subtitle">Stock Buy / Sell Signal &amp; Morning Briefing System</p>
+    </div>
+</header>
+
+<main class="container">
+
+    <!-- ── Summary cards ── -->
+    <section class="summary-cards">
+        <div class="card card-total">
+            <span class="card-label">Total Signals</span>
+            <span class="card-value" th:text="${totalCount}">0</span>
+        </div>
+        <div class="card card-buy">
+            <span class="card-label">BUY Signals</span>
+            <span class="card-value" th:text="${buyCount}">0</span>
+        </div>
+        <div class="card card-sell">
+            <span class="card-label">SELL Signals</span>
+            <span class="card-value" th:text="${sellCount}">0</span>
+        </div>
+    </section>
+
+    <!-- ── Quick API reference ── -->
+    <section class="api-box">
+        <h2>REST API</h2>
+        <ul>
+            <li><code>POST /api/signals</code> — Create a new signal (JSON body)</li>
+            <li><code>GET  /api/signals</code> — List all signals</li>
+            <li><code>GET  /api/signals/{id}</code> — Get signal by ID</li>
+            <li><code>GET  /api/signals/ticker/{ticker}</code> — Filter by ticker</li>
+            <li><code>GET  /api/signals/type/BUY</code> or <code>SELL</code> — Filter by type</li>
+        </ul>
+        <p>Example payload:</p>
+        <pre>{
+  "ticker": "AAPL",
+  "signalType": "BUY",
+  "price": 182.50,
+  "message": "Golden cross detected"
+}</pre>
+    </section>
+
+    <!-- ── Signal history table ── -->
+    <section class="signal-history">
+        <h2>Signal History</h2>
+
+        <div th:if="${#lists.isEmpty(signals)}" class="empty-state">
+            <p>No signals yet. Use the REST API to send the first signal.</p>
+        </div>
+
+        <table th:unless="${#lists.isEmpty(signals)}" class="signal-table">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Ticker</th>
+                <th>Type</th>
+                <th>Price (USD)</th>
+                <th>Message</th>
+                <th>Received At</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="signal : ${signals}"
+                th:classappend="${signal.signalType.name() == 'BUY'} ? 'row-buy' : 'row-sell'">
+                <td th:text="${signal.id}">1</td>
+                <td class="ticker" th:text="${signal.ticker}">AAPL</td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${signal.signalType.name() == 'BUY'} ? 'badge-buy' : 'badge-sell'"
+                          th:text="${signal.signalType}">BUY</span>
+                </td>
+                <td th:text="${'$' + signal.price}">$0.00</td>
+                <td th:text="${signal.message != null ? signal.message : '-'}">-</td>
+                <td th:text="${#temporals.format(signal.createdAt, 'yyyy-MM-dd HH:mm:ss')}">-</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <p>StockSignal-Web &copy; 2025 &mdash; Powered by Spring Boot &amp; H2</p>
+    </div>
+</footer>
+
+</body>
+</html>
