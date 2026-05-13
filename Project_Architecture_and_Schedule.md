@@ -99,3 +99,21 @@ StockSignal-Web/
 - **Milestone 관리:** GitHub Milestones 기능을 사용하여 주차별 작업 마감일을 설정하고 진행률(%)을 시각화함.
 - **코드 리뷰:** 모든 기능은 Pull Request(PR)를 통해 팀원의 승인을 얻은 후 main 브랜치에 병합하여 품질을 유지함.
 - **상태 추적:** GitHub Projects의 칸반 보드를 활용하여 미완료 작업(Todo)이 적체되지 않도록 관리함.
+
+### 5.4 화면 설계 (Wireframe)
+## 링크 
+https://www.figma.com/make/YFBTRYNRjZ4XecQISpKTlo/StockSignal-Web-Dashboard-Design?p=f&t=wWjSiEnqR3TZas6Z-0&fullscreen=1
+## 로그인 화면
+<img width="2552" height="1330" alt="image" src="https://github.com/user-attachments/assets/af130f20-717a-4cb3-945b-23aea2227220" />
+
+## 회원가입 화면
+<img width="2547" height="1332" alt="image" src="https://github.com/user-attachments/assets/a6fdea29-93e1-47ad-8cf0-32d35a6cb09d" />
+
+## 홈 화면
+<img width="2553" height="1317" alt="image" src="https://github.com/user-attachments/assets/a9a88194-3ac9-4756-99b4-51e574560b10" />
+
+## 모닝 브리핑 화면
+<img width="2550" height="1339" alt="image" src="https://github.com/user-attachments/assets/52ce903d-476a-48c1-be16-032a23134580" />
+
+## 설정 화면
+<img width="2547" height="1330" alt="image" src="https://github.com/user-attachments/assets/46d23e4e-74ee-43e7-9df3-2346c38d0d42" />
