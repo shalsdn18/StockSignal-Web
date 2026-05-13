@@ -35,7 +35,10 @@ StockSignal-Web/
 ```
 
 ---
+## 1-1. ERD 다이어그램
+<img width="693" height="798" alt="image" src="https://github.com/user-attachments/assets/91da6843-c191-4dbc-9ad7-d58e4b122c48" />
 
+---
 ## 2. 팀 역할 분담
 
 팀원별 전문성과 요구사항 명세서(REQUIREMENTS.md)의 ID를 매핑하여 책임 범위를 정의했습니다.
