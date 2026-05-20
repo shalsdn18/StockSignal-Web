@@ -58,7 +58,7 @@
 | **NF-03** | CI/CD 배포 자동화 및 브라우저 호환성 검증 | [#10](https://github.com/shalsdn18/StockSignal-Web/issues/14) | ⚪ 대기 |
 ---
 
-## 3. GitHub 협업 관리 방침
+## GitHub 협업 관리 방침
 
 - **Issue 관리**: 모든 기능적 요구사항(REQ-F)은 개별 Issue로 등록하여 진행 상황을 추적함
 - **Assignee**: 각 이슈마다 담당 팀원을 지정하여 책임 소재를 명확히 함
