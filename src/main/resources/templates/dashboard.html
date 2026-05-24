@@ -8,94 +8,131 @@
 </head>
 <body>
 
-<header class="site-header">
-    <div class="container">
-        <h1>📈 StockSignal Dashboard</h1>
-        <p class="subtitle">Stock Buy / Sell Signal &amp; Morning Briefing System</p>
-    </div>
-</header>
-
-<main class="container">
-
-    <!-- ── Summary cards ── -->
-    <section class="summary-cards">
-        <div class="card card-total">
-            <span class="card-label">Total Signals</span>
-            <span class="card-value" th:text="${totalCount}">0</span>
+<div class="dashboard-shell">
+    <aside class="sidebar" aria-label="Dashboard navigation">
+        <div class="sidebar-brand">
+            <span class="brand-mark">SS</span>
+            <div>
+                <h1>StockSignal</h1>
+                <p>Signal ops console</p>
+            </div>
         </div>
-        <div class="card card-buy">
-            <span class="card-label">BUY Signals</span>
-            <span class="card-value" th:text="${buyCount}">0</span>
-        </div>
-        <div class="card card-sell">
-            <span class="card-label">SELL Signals</span>
-            <span class="card-value" th:text="${sellCount}">0</span>
-        </div>
-    </section>
 
-    <!-- ── Quick API reference ── -->
-    <section class="api-box">
-        <h2>REST API</h2>
-        <ul>
-            <li><code>POST /api/signals</code> — Create a new signal (JSON body)</li>
-            <li><code>GET  /api/signals</code> — List all signals</li>
-            <li><code>GET  /api/signals/{id}</code> — Get signal by ID</li>
-            <li><code>GET  /api/signals/ticker/{ticker}</code> — Filter by ticker</li>
-            <li><code>GET  /api/signals/type/BUY</code> or <code>SELL</code> — Filter by type</li>
-        </ul>
-        <p>Example payload:</p>
-        <pre>{
+        <nav class="sidebar-nav">
+            <a href="#summary">Overview</a>
+            <a href="#api-reference">API Reference</a>
+            <a href="#signal-history">Signal History</a>
+        </nav>
+
+        <div class="sidebar-stats">
+            <div>
+                <span>Total</span>
+                <strong th:text="${totalCount}">0</strong>
+            </div>
+            <div>
+                <span>BUY</span>
+                <strong th:text="${buyCount}">0</strong>
+            </div>
+            <div>
+                <span>SELL</span>
+                <strong th:text="${sellCount}">0</strong>
+            </div>
+        </div>
+
+        <p class="sidebar-note">Figma 기준 좌측 고정 네비게이션 영역</p>
+    </aside>
+
+    <div class="dashboard-content">
+        <header class="site-header">
+            <div class="container">
+                <p class="eyebrow">REQ-F-004 · REQ-U-001 · REQ-U-004</p>
+                <h1>📈 StockSignal Dashboard</h1>
+                <p class="subtitle">Stock Buy / Sell Signal &amp; Morning Briefing System</p>
+            </div>
+        </header>
+
+        <main class="container dashboard-main">
+            <!-- ── Summary cards ── -->
+            <section id="summary" class="summary-cards" aria-labelledby="summary-title">
+                <h2 id="summary-title" class="section-title">Signal Overview</h2>
+                <div class="card card-total">
+                    <span class="card-label">Total Signals</span>
+                    <span class="card-value" th:text="${totalCount}">0</span>
+                </div>
+                <div class="card card-buy">
+                    <span class="card-label">BUY Signals</span>
+                    <span class="card-value" th:text="${buyCount}">0</span>
+                </div>
+                <div class="card card-sell">
+                    <span class="card-label">SELL Signals</span>
+                    <span class="card-value" th:text="${sellCount}">0</span>
+                </div>
+            </section>
+
+            <!-- ── Quick API reference ── -->
+            <section id="api-reference" class="api-box">
+                <h2>REST API</h2>
+                <ul>
+                    <li><code>POST /api/signals</code> — Create a new signal (JSON body)</li>
+                    <li><code>GET /api/signals</code> — List all signals</li>
+                    <li><code>GET /api/signals/{id}</code> — Get signal by ID</li>
+                    <li><code>GET /api/signals/ticker/{ticker}</code> — Filter by ticker</li>
+                    <li><code>GET /api/signals/type/BUY</code> or <code>SELL</code> — Filter by type</li>
+                </ul>
+                <p>Example payload:</p>
+                <pre>{
   "ticker": "AAPL",
   "signalType": "BUY",
   "price": 182.50,
   "message": "Golden cross detected"
 }</pre>
-    </section>
+            </section>
 
-    <!-- ── Signal history table ── -->
-    <section class="signal-history">
-        <h2>Signal History</h2>
+            <!-- ── Signal history table ── -->
+            <section id="signal-history" class="signal-history">
+                <h2>Signal History</h2>
 
-        <div th:if="${#lists.isEmpty(signals)}" class="empty-state">
-            <p>No signals yet. Use the REST API to send the first signal.</p>
-        </div>
+                <div th:if="${#lists.isEmpty(signals)}" class="empty-state">
+                    <p>No signals yet. Use the REST API to send the first signal.</p>
+                </div>
 
-        <table th:unless="${#lists.isEmpty(signals)}" class="signal-table">
-            <thead>
-            <tr>
-                <th>#</th>
-                <th>Ticker</th>
-                <th>Type</th>
-                <th>Price (USD)</th>
-                <th>Message</th>
-                <th>Received At</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="signal : ${signals}"
-                th:classappend="${signal.signalType.name() == 'BUY'} ? 'row-buy' : 'row-sell'">
-                <td th:text="${signal.id}">1</td>
-                <td class="ticker" th:text="${signal.ticker}">AAPL</td>
-                <td>
-                    <span class="badge"
-                          th:classappend="${signal.signalType.name() == 'BUY'} ? 'badge-buy' : 'badge-sell'"
-                          th:text="${signal.signalType}">BUY</span>
-                </td>
-                <td th:text="${'$' + signal.price}">$0.00</td>
-                <td th:text="${signal.message != null ? signal.message : '-'}">-</td>
-                <td th:text="${#temporals.format(signal.createdAt, 'yyyy-MM-dd HH:mm:ss')}">-</td>
-            </tr>
-            </tbody>
-        </table>
-    </section>
+                <table th:unless="${#lists.isEmpty(signals)}" class="signal-table">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Ticker</th>
+                        <th>Type</th>
+                        <th>Price (USD)</th>
+                        <th>Message</th>
+                        <th>Received At</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="signal : ${signals}"
+                        th:classappend="${signal.signalType.name() == 'BUY'} ? ' row-buy' : ' row-sell'">
+                        <td th:text="${signal.id}">1</td>
+                        <td class="ticker" th:text="${signal.ticker}">AAPL</td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${signal.signalType.name() == 'BUY'} ? ' badge-buy' : ' badge-sell'"
+                                  th:text="${signal.signalType}">BUY</span>
+                        </td>
+                        <td th:text="${'$' + signal.price}">$0.00</td>
+                        <td th:text="${signal.message != null ? signal.message : '-'}">-</td>
+                        <td th:text="${#temporals.format(signal.createdAt, 'yyyy-MM-dd HH:mm:ss')}">-</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
 
-</main>
-
-<footer class="site-footer">
-    <div class="container">
-        <p>StockSignal-Web &copy; 2025 &mdash; Powered by Spring Boot &amp; H2</p>
+        <footer class="site-footer">
+            <div class="container">
+                <p>StockSignal-Web &copy; 2025 &mdash; Powered by Spring Boot &amp; H2</p>
+            </div>
+        </footer>
     </div>
-</footer>
+</div>
 
 </body>
 </html>

@@ -10,7 +10,9 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f0f2f5;
+    background:
+            radial-gradient(circle at top left, rgba(26, 35, 126, 0.12), transparent 34%),
+            linear-gradient(180deg, #f5f7fb 0%, #eef2f7 100%);
     color: #333;
     line-height: 1.6;
 }
@@ -20,6 +22,142 @@ body {
     max-width: 1100px;
     margin: 0 auto;
     padding: 0 1.5rem;
+}
+
+.dashboard-shell {
+    min-height: 100vh;
+}
+
+.sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 290px;
+    padding: 1.75rem 1.5rem;
+    background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
+    color: #f9fafb;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-shadow: 10px 0 30px rgba(15, 23, 42, 0.12);
+    z-index: 10;
+}
+
+.dashboard-content {
+    margin-left: 290px;
+    min-height: 100vh;
+}
+
+.dashboard-main {
+    padding-top: 1.75rem;
+    padding-bottom: 2.5rem;
+}
+
+.section-title,
+.eyebrow {
+    width: 100%;
+}
+
+.section-title {
+    margin-bottom: 0.75rem;
+    font-size: 1.15rem;
+    color: #1a237e;
+}
+
+.eyebrow {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: rgba(255, 255, 255, 0.72);
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.brand-mark {
+    width: 2.9rem;
+    height: 2.9rem;
+    border-radius: 0.9rem;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+    color: #111827;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    box-shadow: 0 12px 24px rgba(249, 115, 22, 0.25);
+}
+
+.sidebar-brand h1 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.sidebar-brand p {
+    margin-top: 0.15rem;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.68);
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.sidebar-nav a {
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 0.85rem;
+    padding: 0.85rem 1rem;
+    transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-nav a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    transform: translateX(2px);
+}
+
+.sidebar-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.sidebar-stats div {
+    border-radius: 0.9rem;
+    padding: 0.85rem 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-stats span {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.68);
+}
+
+.sidebar-stats strong {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 1.15rem;
+    color: #fff;
+}
+
+.sidebar-note {
+    margin-top: auto;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.66);
 }
 
 /* ---- Header ---- */
@@ -47,6 +185,12 @@ body {
     gap: 1.25rem;
     margin: 2rem 0 1.5rem;
     flex-wrap: wrap;
+    align-items: stretch;
+}
+
+.summary-cards .section-title {
+    flex-basis: 100%;
+    margin-bottom: 0.25rem;
 }
 
 .card {
@@ -203,4 +347,45 @@ body {
     text-align: center;
     padding: 1rem 0;
     font-size: .85rem;
+}
+
+@media (max-width: 1024px) {
+    .sidebar {
+        position: static;
+        width: auto;
+        border-right: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 0;
+    }
+
+    .dashboard-content {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 1rem;
+    }
+
+    .sidebar {
+        padding: 1.25rem 1rem;
+    }
+
+    .sidebar-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-cards {
+        gap: 0.9rem;
+    }
+
+    .card {
+        flex-basis: 100%;
+    }
+
+    .signal-table th,
+    .signal-table td {
+        padding: 0.65rem 0.75rem;
+    }
 }
