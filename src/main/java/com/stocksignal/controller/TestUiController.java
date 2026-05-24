@@ -15,7 +15,7 @@ import java.util.List;
 @Controller
 public class TestUiController {
 
-    @GetMapping({"/", "/dashboard", "/test/dashboard"})
+    @GetMapping({"/", "/test/dashboard"})
     public String dashboard(Model model) {
         List<StockSignal> signals = new ArrayList<>();
 

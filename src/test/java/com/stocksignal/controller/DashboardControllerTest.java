@@ -26,20 +26,20 @@ class DashboardControllerTest {
     private StockSignalService signalService;
 
     @Test
-    void dashboard_rootPath_returnsOkAndDashboardView() throws Exception {
+    void dashboard_dashboardPath_returnsOkAndDashboardView() throws Exception {
         StockSignal s = new StockSignal("AAPL", SignalType.BUY, 180.0, "test");
         s.setCreatedAt(LocalDateTime.now());
         when(signalService.getAllSignals()).thenReturn(List.of(s));
         when(signalService.getRecentSignals()).thenReturn(List.of(s));
 
-        mockMvc.perform(get("/"))
+        mockMvc.perform(get("/dashboard"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("dashboard"))
                 .andExpect(model().attributeExists("signals", "totalCount", "buyCount", "sellCount"));
     }
 
     @Test
-    void dashboard_dashboardPath_returnsOkAndDashboardView() throws Exception {
+    void dashboard_dashboardPath_returnsOkAndDashboardViewWithoutSignals() throws Exception {
         when(signalService.getAllSignals()).thenReturn(List.of());
         when(signalService.getRecentSignals()).thenReturn(List.of());
 

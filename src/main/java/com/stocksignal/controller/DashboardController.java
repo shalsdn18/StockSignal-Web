@@ -21,9 +21,9 @@ public class DashboardController {
     }
 
     /**
-     * Renders the main dashboard page at {@code /} and {@code /dashboard}.
+     * Renders the service-backed dashboard page at {@code /dashboard}.
      */
-    @GetMapping({"/", "/dashboard"})
+    @GetMapping("/dashboard")
     public String dashboard(Model model) {
         List<StockSignal> allSignals = signalService.getAllSignals();
         List<StockSignal> recentSignals = signalService.getRecentSignals();
