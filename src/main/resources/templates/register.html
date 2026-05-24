@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>StockSignal - Register</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body class="auth-body">
+<main class="auth-shell auth-shell--wide">
+    <section class="auth-card auth-card--register">
+        <div class="auth-brand">
+            <span class="brand-mark">SS</span>
+            <div>
+                <p class="auth-kicker">Create Account</p>
+                <h1>Register</h1>
+            </div>
+        </div>
+
+        <p class="auth-copy">Bind your profile to stock alerts and Telegram delivery.</p>
+
+        <form th:action="@{/register}" th:object="${user}" method="post" class="auth-form auth-form--grid">
+            <label class="auth-field">
+                <span>Username</span>
+                <input type="text" th:field="*{username}" maxlength="50" required/>
+                <small th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="auth-error"></small>
+            </label>
+
+            <label class="auth-field">
+                <span>Password</span>
+                <input type="password" th:field="*{password}" maxlength="100" required/>
+                <small class="auth-help">Store a BCrypt hash value up to 100 characters.</small>
+                <small th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="auth-error"></small>
+            </label>
+
+            <label class="auth-field">
+                <span>Email</span>
+                <input type="email" th:field="*{email}" maxlength="100"/>
+                <small th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="auth-error"></small>
+            </label>
+
+            <label class="auth-field">
+                <span>Telegram Chat ID</span>
+                <input type="text" th:field="*{telegramChatId}" maxlength="50"/>
+                <small th:if="${#fields.hasErrors('telegramChatId')}" th:errors="*{telegramChatId}" class="auth-error"></small>
+            </label>
+
+            <label class="auth-field auth-field--full">
+                <span>Telegram Bot Token</span>
+                <input type="text" th:field="*{telegramBotToken}" maxlength="100"/>
+                <small th:if="${#fields.hasErrors('telegramBotToken')}" th:errors="*{telegramBotToken}" class="auth-error"></small>
+            </label>
+
+            <button type="submit" class="auth-button auth-button--wide">Create account</button>
+        </form>
+
+        <p class="auth-footer-copy">
+            Already have an account?
+            <a th:href="@{/login}">Sign in</a>
+        </p>
+    </section>
+</main>
+</body>
+</html>
