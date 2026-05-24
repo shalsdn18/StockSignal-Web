@@ -19,11 +19,10 @@
 
         <p class="auth-copy">Bind your profile to stock alerts and Telegram delivery.</p>
 
-        <form th:action="@{/register}" th:object="${user}" method="post" class="auth-form auth-form--grid">
+        <form th:action="@{/register}" method="POST" class="auth-form auth-form--grid">
             <label class="auth-field">
                 <span>Username</span>
                 <input type="text" name="username" id="username" maxlength="50" required/>
-                <small th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="auth-error"></small>
             </label>
 
             <label class="auth-field">
