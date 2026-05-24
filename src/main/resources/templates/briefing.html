@@ -19,9 +19,9 @@
         </div>
 
         <nav class="sidebar-nav">
-            <a href="/dashboard">Overview</a>
-            <a href="#briefing" th:classappend="' nav-active'">Morning Briefing</a>
-            <a href="/dashboard#api-reference">API Reference</a>
+            <a th:href="@{/}">🏠 Overview (Dashboard)</a>
+            <a th:href="@{/briefing}" class="nav-active">📰 Morning Briefing</a>
+            <a th:href="@{/settings}">⚙️ System Settings</a>
         </nav>
 
         <div class="sidebar-stats">
