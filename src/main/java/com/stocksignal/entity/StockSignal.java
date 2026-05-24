@@ -43,6 +43,11 @@ public class StockSignal {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    /** Owner user for the signal. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -64,6 +69,10 @@ public class StockSignal {
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getTicker() {
@@ -104,5 +113,13 @@ public class StockSignal {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }
