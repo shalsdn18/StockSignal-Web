@@ -1,30 +1,61 @@
 package com.stocksignal.controller;
 
 import com.stocksignal.entity.MorningBriefing;
+import com.stocksignal.entity.SignalType;
+import com.stocksignal.entity.StockSignal;
 import com.stocksignal.entity.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Controller
 public class TestUiController {
 
-    @GetMapping("/test/login")
-    public String testLogin() {
+    @GetMapping({"/", "/dashboard", "/test/dashboard"})
+    public String dashboard(Model model) {
+        List<StockSignal> signals = new ArrayList<>();
+
+        StockSignal appleBuy = new StockSignal("AAPL", SignalType.BUY, 182.50, "Golden cross confirmed");
+        appleBuy.setCreatedAt(LocalDateTime.of(2026, 5, 24, 9, 15, 0));
+
+        StockSignal teslaSell = new StockSignal("TSLA", SignalType.SELL, 198.40, "Resistance failed");
+        teslaSell.setCreatedAt(LocalDateTime.of(2026, 5, 24, 10, 5, 0));
+
+        StockSignal nvidiaBuy = new StockSignal("NVDA", SignalType.BUY, 946.20, "AI momentum continues");
+        nvidiaBuy.setCreatedAt(LocalDateTime.of(2026, 5, 24, 10, 45, 0));
+
+        signals.add(appleBuy);
+        signals.add(teslaSell);
+        signals.add(nvidiaBuy);
+
+        model.addAttribute("signals", signals);
+        model.addAttribute("totalCount", 142);
+        model.addAttribute("buyCount", 98);
+        model.addAttribute("sellCount", 44);
+
+        return "dashboard";
+    }
+
+    @GetMapping({"/login", "/test/login"})
+    public String login() {
         return "login";
     }
 
-    @GetMapping("/test/register")
-    public String testRegister() {
+    @GetMapping({"/register", "/test/register"})
+    public String register() {
         return "register";
     }
 
-    @GetMapping("/test/briefing")
-    public String testBriefing(Model model) {
+    @GetMapping({"/briefing", "/test/briefing"})
+    public String briefing(Model model) {
         MorningBriefing briefing = new MorningBriefing(
-                "🚀 2026년 5월 24일 주요 증시 동향 및 AI 시그널 요약",
-                "<p>나스닥 지수가 <b>1.2% 상승</b> 마감했습니다.</p>",
-                "나스닥 +1.2%, 환율 1,345원"
+                "🚀 오늘의 AI 증시 요약",
+                "<p>나스닥 <b>1.2% 상승</b></p>",
+                "안정세"
         );
 
         model.addAttribute("briefing", briefing);
@@ -35,11 +66,11 @@ public class TestUiController {
         return "briefing";
     }
 
-    @GetMapping("/test/settings")
-    public String testSettings(Model model) {
+    @GetMapping({"/settings", "/test/settings"})
+    public String settings(Model model) {
         User user = new User(
                 "shalsdn18",
-                "encryptedPassword",
+            "encryptedPassword",
                 "shalsdn18@hannam.ac.kr",
                 "778899123",
                 "123456789:ABCdefGhIJKlmNoPQ_TestToken"
