@@ -119,6 +119,13 @@ body {
     transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 
+.sidebar-nav a.nav-active {
+    background: rgba(249, 115, 22, 0.16);
+    color: #fff;
+    border-color: rgba(249, 115, 22, 0.28);
+    box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.16);
+}
+
 .sidebar-nav a:hover {
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
@@ -230,6 +237,57 @@ body {
     box-shadow: 0 1px 4px rgba(0,0,0,.08);
 }
 
+
+.briefing-report {
+    display: grid;
+    gap: 1rem;
+}
+
+.briefing-report__meta {
+    display: grid;
+    gap: 0.35rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.briefing-report__meta h3 {
+    font-size: 1.4rem;
+    color: #111827;
+}
+
+.briefing-report__meta p {
+    color: #6b7280;
+    font-size: 0.92rem;
+}
+
+.briefing-report__content {
+    color: #1f2937;
+    line-height: 1.75;
+}
+
+.briefing-report__content h1,
+.briefing-report__content h2,
+.briefing-report__content h3,
+.briefing-report__content h4,
+.briefing-report__content h5,
+.briefing-report__content h6 {
+    color: #111827;
+    margin: 1rem 0 0.5rem;
+}
+
+.briefing-report__content p {
+    margin-bottom: 0.9rem;
+}
+
+.briefing-report__content strong,
+.briefing-report__content b {
+    font-weight: 700;
+}
+
+.briefing-report__content ul,
+.briefing-report__content ol {
+    margin: 0.75rem 0 0.75rem 1.25rem;
+}
 .api-box h2 {
     margin-bottom: .75rem;
     font-size: 1.1rem;

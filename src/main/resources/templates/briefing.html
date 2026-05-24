@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>StockSignal — Morning Briefing</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<div class="dashboard-shell">
+    <aside class="sidebar" aria-label="Dashboard navigation">
+        <div class="sidebar-brand">
+            <span class="brand-mark">SS</span>
+            <div>
+                <h1>StockSignal</h1>
+                <p>Signal ops console</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="/dashboard">Overview</a>
+            <a href="#briefing" th:classappend="' nav-active'">Morning Briefing</a>
+            <a href="/dashboard#api-reference">API Reference</a>
+        </nav>
+
+        <div class="sidebar-stats">
+            <div>
+                <span>Status</span>
+                <strong>Briefing</strong>
+            </div>
+            <div>
+                <span>Mode</span>
+                <strong>AI</strong>
+            </div>
+            <div>
+                <span>Focus</span>
+                <strong>Market</strong>
+            </div>
+        </div>
+
+        <p class="sidebar-note">Figma 기준 좌측 고정 네비게이션 영역</p>
+    </aside>
+
+    <div class="dashboard-content">
+        <header class="site-header">
+            <div class="container">
+                <p class="eyebrow">REQ-F-009 · Business Infrastructure</p>
+                <h1>Morning Briefing</h1>
+                <p class="subtitle">AI-assisted market digest for operational decision making</p>
+            </div>
+        </header>
+
+        <main class="container dashboard-main">
+            <section id="briefing" class="api-box">
+                <h2>Briefing Report</h2>
+
+                <div th:if="${briefing != null}" class="briefing-report">
+                    <div class="briefing-report__meta">
+                        <h3 th:text="${briefing.title}">Morning Briefing Title</h3>
+                        <p th:if="${briefing.marketStatus != null}" th:text="${briefing.marketStatus}">Market status</p>
+                        <p th:if="${briefing.publishedAt != null}"
+                           th:text="${#temporals.format(briefing.publishedAt, 'yyyy-MM-dd HH:mm:ss')}">-</p>
+                    </div>
+
+                    <article class="briefing-report__content" th:utext="${briefing.content}">
+                        Briefing content goes here.
+                    </article>
+                </div>
+
+                <div th:unless="${briefing != null}" class="empty-state">
+                    <p>No briefing is available yet. Please wait for the next published report.</p>
+                </div>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            <div class="container">
+                <p>StockSignal-Web &copy; 2025 &mdash; Powered by Spring Boot &amp; H2</p>
+            </div>
+        </footer>
+    </div>
+</div>
+
+</body>
+</html>
