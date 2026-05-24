@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>StockSignal — Settings</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<div class="dashboard-shell">
+    <aside class="sidebar" aria-label="Dashboard navigation">
+        <div class="sidebar-brand">
+            <span class="brand-mark">SS</span>
+            <div>
+                <h1>StockSignal</h1>
+                <p>Signal ops console</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="/dashboard">Overview</a>
+            <a href="/briefing">Morning Briefing</a>
+            <a href="#settings" th:classappend="${activeSection != null and activeSection == 'settings'} ? ' nav-active' : ''">⚙ Settings</a>
+        </nav>
+
+        <div class="sidebar-stats">
+            <div>
+                <span>Area</span>
+                <strong>Account</strong>
+            </div>
+            <div>
+                <span>Scope</span>
+                <strong>User</strong>
+            </div>
+            <div>
+                <span>Mode</span>
+                <strong>Secure</strong>
+            </div>
+        </div>
+
+        <p class="sidebar-note">Figma 기준 좌측 고정 네비게이션 영역</p>
+    </aside>
+
+    <div class="dashboard-content">
+        <header class="site-header">
+            <div class="container">
+                <p class="eyebrow">REQ-F-010 · Account Settings</p>
+                <h1>Settings</h1>
+                <p class="subtitle">Manage Telegram routing and profile delivery preferences</p>
+            </div>
+        </header>
+
+        <main class="container dashboard-main">
+            <section id="settings" class="api-box">
+                <h2>Account Settings</h2>
+
+                <div th:if="${successMessage != null and !#strings.isEmpty(successMessage)}" class="auth-alert auth-alert--success">
+                    <p th:text="${successMessage}">Settings saved successfully.</p>
+                </div>
+
+                <div th:if="${errorMessage != null and !#strings.isEmpty(errorMessage)}" class="auth-alert auth-alert--error">
+                    <p th:text="${errorMessage}">An error occurred while updating settings.</p>
+                </div>
+
+                <form class="settings-form" th:action="@{/settings}" method="post">
+                    <label class="auth-field">
+                        <span>Telegram Chat ID</span>
+                        <input type="text"
+                               name="telegramChatId"
+                               maxlength="50"
+                               th:value="${user != null ? user.telegramChatId : ''}"/>
+                    </label>
+
+                    <label class="auth-field">
+                        <span>Telegram Bot Token</span>
+                        <input type="text"
+                               name="telegramBotToken"
+                               maxlength="100"
+                               th:value="${user != null ? user.telegramBotToken : ''}"/>
+                    </label>
+
+                    <div class="settings-actions">
+                        <button type="submit" class="filter-submit">Save Changes</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            <div class="container">
+                <p>StockSignal-Web &copy; 2025 &mdash; Powered by Spring Boot &amp; H2</p>
+            </div>
+        </footer>
+    </div>
+</div>
+
+</body>
+</html>
