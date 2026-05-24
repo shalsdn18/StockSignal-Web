@@ -4,34 +4,53 @@
 
 ```text
 StockSignal-Web/
-├── .github/workflows/          # CI/CD 자동화 환경 (Java CI, Marp 배포)
-├── .vscode/                    # 에디터 설정 (Java 컴파일 모드 등)
-├── docs/                       # 프로젝트 관련 설계 및 발표 문서
-│   ├── presentation.md         # Marp 기반 발표 자료
-│   ├── Project Architecture_and_Schedule.md # 본 문서
-│   ├── ERD.png                 # 데이터베이스 설계도
-│   └── wireframe.png           # Figma 화면 설계도
+├── .github/workflows/          # CI/CD 자동화 환경 
+│   ├── ci.yml                  # PR 발생 시 자동 빌드 및 Java CI 테스트 수행
+│   └── deploy.yml              # main 브랜치 푸시 시 Marp 발표 자료를 GitHub Pages로 자동 배포
+├── .vscode/                    # 에디터 설정 (Java 컴파일 독립 실행 모드 등)
+├── 1. requirements/            # 프로젝트 요구사항 설계 자산 관리 폴더
+│   └── REQUIREMENTS.md         # 기능적/비기능적 요구사항 상세 명세서
+├── 2. project_architecture_and_schedule/ # 프로젝트 관리 및 설계 문서 폴더
+│   └── Project_Architecture_and_Schedule.md # ◀ [확인] 본 문서가 위치한 경로입니다
+├── docs/                       # 프로젝트 시각 자료 및 발표 문서 집합
+│   ├── presentation.md         # Marp 기반 슬라이드 발표 자료
+│   ├── ERD.png                 # 데이터베이스 스키마 설계 다이어그램
+│   └── wireframe.png           # Figma 프로토타입 화면 설계도
+├── prompt/                     # AI 자산 아카이빙 폴더
+│   └── PROMPT.md               # AI 활용 프롬프트 및 엔지니어링 수행 로그
 ├── src/                        # 소스 코드 메인 디렉토리
 │   ├── main/
 │   │   ├── java/com/stocksignal/
-│   │   │   ├── config/         # 애플리케이션 공통 설정 (AppConfig)
-│   │   │   ├── controller/     # HTTP 요청 제어 (API 및 대시보드)
-│   │   │   ├── dto/            # 데이터 전송 객체 (StockSignalRequest)
-│   │   │   ├── entity/         # DB 테이블 매핑 엔티티 (StockSignal 등)
-│   │   │   ├── repository/     # DB 접근 인터페이스 (JPA Repository)
-│   │   │   ├── service/        # 비즈니스 로직 처리 서비스
-│   │   │   └── StockSignalApplication.java # 애플리케이션 시작점
+│   │   │   ├── config/         # 인프라 공통 설정 (RestTemplate 빈 등록 등 AppConfig)
+│   │   │   ├── controller/     # [Controller Layer] HTTP 요청 매핑 및 뷰 포워딩
+│   │   │   │   ├── DashboardController.java    # Thymeleaf 대시보드 렌더링 제어
+│   │   │   │   └── StockSignalApiController.java # 외부 수신용 REST API 엔드포인트 제어
+│   │   │   ├── dto/            # [Data Transfer Object] 계층 간 데이터 교환 객체
+│   │   │   │   └── StockSignalRequest.java     # 수신 데이터 유효성 검증 DTO
+│   │   │   ├── entity/         # [Model Layer] ORM 매핑용 도메인 선언 계층
+│   │   │   │   ├── SignalType.java             # BUY / SELL 열거형 타입 고정
+│   │   │   │   └── StockSignal.java            # 매매 신호 JPA 테이블 매핑 엔티티
+│   │   │   ├── repository/     # [Model Layer] Spring Data JPA 기반 Repository 인터페이스
+│   │   │   │   └── StockSignalRepository.java  # 시간 정렬 및 조건 필터링 전용 CRUD 쿼리 수행
+│   │   │   ├── service/        # [Model Layer] 트랜잭션 단위의 핵심 비즈니스 로직
+│   │   │   │   ├── StockSignalService.java      # 수신 데이터 파싱 처리 및 알림 위임 로직
+│   │   │   │   └── TelegramNotificationService.java # 텔레그램 봇 API 비동기 실시간 전송 처리
+│   │   │   └── StockSignalApplication.java # Spring Boot 애플리케이션 메인 부트스트랩 클래스
 │   │   └── resources/
-│   │       ├── static/css/     # 정적 자원 (메인 스타일시트)
-│   │       ├── templates/      # UI 템플릿 (Thymeleaf Dashboard)
-│   │       └── application.properties # 시스템 환경 설정 (H2 DB, Port 등)
-│   └── test/                   # 테스트 코드 및 환경 설정
-├── .gitignore                  # Git 관리 제외 목록
-├── pom.xml                     # Maven 빌드 및 의존성 설정
-├── README.md                   # 프로젝트 통합 개요서
-├── REQUIREMENTS.md             # 요구사항 상세 명세서
-├── PROMPT.md                   # AI 프롬프트 로그 기록
-└── LICENSE                     # 프로젝트 라이선스 (MIT)
+│   │       ├── static/css/     # 정적 스타일시트 에셋 디렉토리
+│   │       │   └── style.css   # 메인 레이아웃 및 컴포넌트 전용 스타일
+│   │       ├── templates/      # [View Layer] Thymeleaf 템플릿 엔진 전용 디렉토리
+│   │       │   └── dashboard.html # 요약 카드 및 통계 테이블 데이터 바인딩 화면
+│   │       └── application.properties # H2 인메모리 DB 설정 및 환경 변수 파일
+│   └── test/                   # JUnit5 및 Mockito 통합 테스트 패키지
+│       └── java/com/stocksignal/
+│           ├── controller/     # API 및 대시보드 엔드포인트 단위 슬라이스 테스트
+│           ├── service/        # 비즈니스 로직 및 Mockito 빈 주입 통합 테스트
+│           └── StockSignalApplicationTest.java # 컨텍스트 로드 검증용 테스트
+├── .gitignore                  # Git 추적 대상에서 빌드 파일(target/) 및 IDE 설정 제외
+├── pom.xml                     # 의존성 주입(JPA, Thymeleaf) 및 Maven 빌드 파이프라인 관리
+├── README.md                   # 프로젝트 전체 통합 개요서 (In-Scope, Out-of-Scope 관리)
+└── LICENSE                     # 오픈소스 사용권 권한 명시 (MIT License)
 ```
 
 ---
