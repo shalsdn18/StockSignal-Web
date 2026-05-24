@@ -69,6 +69,47 @@
                 </div>
             </section>
 
+            <!-- ── Signal filters ── -->
+            <section id="signal-filter" class="filter-box" aria-labelledby="filter-title">
+                <div class="filter-box__header">
+                    <h2 id="filter-title">Signal Filters</h2>
+                    <p>Search by ticker and sort the history without losing the current selection.</p>
+                </div>
+
+                <form class="filter-form" th:action="@{/dashboard}" method="get">
+                    <label class="filter-field filter-field--ticker">
+                        <span>Ticker</span>
+                        <input type="search"
+                               name="ticker"
+                               placeholder="AAPL"
+                               th:value="${param.ticker}"/>
+                    </label>
+
+                    <label class="filter-field">
+                        <span>Signal Type</span>
+                        <select name="signalType">
+                            <option value="" th:selected="${param.signalType == null or #lists.isEmpty(param.signalType)}">All</option>
+                            <option value="BUY" th:selected="${param.signalType != null and param.signalType[0] == 'BUY'}">BUY</option>
+                            <option value="SELL" th:selected="${param.signalType != null and param.signalType[0] == 'SELL'}">SELL</option>
+                        </select>
+                    </label>
+
+                    <label class="filter-field">
+                        <span>Sort</span>
+                        <select name="sort">
+                            <option value="createdAt,desc" th:selected="${param.sort == null or param.sort[0] == 'createdAt,desc'}">Newest</option>
+                            <option value="createdAt,asc" th:selected="${param.sort != null and param.sort[0] == 'createdAt,asc'}">Oldest</option>
+                            <option value="signalType,asc" th:selected="${param.sort != null and param.sort[0] == 'signalType,asc'}">Signal Type A-Z</option>
+                        </select>
+                    </label>
+
+                    <div class="filter-actions">
+                        <button type="submit" class="filter-submit">Search</button>
+                        <a th:href="@{/dashboard}" class="filter-reset">Reset</a>
+                    </div>
+                </form>
+            </section>
+
             <!-- ── Quick API reference ── -->
             <section id="api-reference" class="api-box">
                 <h2>REST API</h2>
