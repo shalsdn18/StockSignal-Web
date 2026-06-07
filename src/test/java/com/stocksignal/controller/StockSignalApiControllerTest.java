@@ -5,11 +5,12 @@ import com.stocksignal.dto.StockSignalRequest;
 import com.stocksignal.entity.SignalType;
 import com.stocksignal.entity.StockSignal;
 import com.stocksignal.service.StockSignalService;
+import com.stocksignal.util.TelegramSignalParser;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -30,8 +32,11 @@ class StockSignalApiControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-        @MockitoBean
-        private StockSignalService signalService;
+    @MockitoBean
+    private StockSignalService signalService;
+
+    @MockitoBean
+    private TelegramSignalParser telegramSignalParser;
 
     private StockSignal buildSignal(String ticker, SignalType type, double price) {
         StockSignal s = new StockSignal(ticker, type, price, "note");
@@ -55,6 +60,38 @@ class StockSignalApiControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.ticker").value("AAPL"))
                 .andExpect(jsonPath("$.signalType").value("BUY"));
+    }
+
+    @Test
+    void webhook_returns201AndBody() throws Exception {
+        StockSignalRequest request = new StockSignalRequest();
+        request.setTicker("AAPL");
+        request.setSignalType(SignalType.BUY);
+        request.setPrice(182.50);
+
+        StockSignal saved = buildSignal("AAPL", SignalType.BUY, 182.50);
+        when(telegramSignalParser.parse("BUY AAPL 182.50")).thenReturn(request);
+        when(signalService.createSignal(request)).thenReturn(saved);
+
+        mockMvc.perform(post("/api/signals/webhook")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content("BUY AAPL 182.50"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.ticker").value("AAPL"))
+                .andExpect(jsonPath("$.signalType").value("BUY"));
+
+        verify(signalService).createSignal(request);
+    }
+
+    @Test
+    void webhook_invalidPayload_returns400() throws Exception {
+        when(telegramSignalParser.parse("invalid payload"))
+                .thenThrow(new IllegalArgumentException("Unable to parse stock signal text: invalid payload"));
+
+        mockMvc.perform(post("/api/signals/webhook")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content("invalid payload"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

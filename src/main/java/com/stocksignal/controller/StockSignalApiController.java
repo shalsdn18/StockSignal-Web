@@ -4,8 +4,10 @@ import com.stocksignal.dto.StockSignalRequest;
 import com.stocksignal.entity.SignalType;
 import com.stocksignal.entity.StockSignal;
 import com.stocksignal.service.StockSignalService;
+import com.stocksignal.util.TelegramSignalParser;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,9 +29,12 @@ import java.util.List;
 public class StockSignalApiController {
 
     private final StockSignalService signalService;
+    private final TelegramSignalParser telegramSignalParser;
 
-    public StockSignalApiController(StockSignalService signalService) {
+    public StockSignalApiController(StockSignalService signalService,
+                                    TelegramSignalParser telegramSignalParser) {
         this.signalService = signalService;
+        this.telegramSignalParser = telegramSignalParser;
     }
 
     /** Create a new stock signal. */
@@ -38,6 +43,18 @@ public class StockSignalApiController {
             @Valid @RequestBody StockSignalRequest request) {
         StockSignal saved = signalService.createSignal(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    /** Receive a plaintext Telegram webhook payload and persist it as a signal. */
+    @PostMapping(value = "/webhook", consumes = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<StockSignal> receiveWebhook(@RequestBody String rawMessage) {
+        try {
+            StockSignalRequest request = telegramSignalParser.parse(rawMessage);
+            StockSignal saved = signalService.createSignal(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /** List all signals (newest first). */
