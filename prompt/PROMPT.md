@@ -13,8 +13,6 @@
   ```
 - 결과/메모:
 
----
-
 ## 기록
 
 ### 날짜: 2026-04-29
@@ -56,18 +54,6 @@
 
 ---
 
-### 날짜: 2026-06-07
-- 목적/상황: 외부 파이썬 봇 연동을 위한 텔레그램 신호 파싱 및 웹훅 수신 기능 추가
-- 사용한 프롬프트:
-  ```
-[REQ-F-001] 텔레그램 신호 수신 및 파싱
-
-외부 파이썬 봇으로부터 전달받은 텍스트 신호(정형/비정형 텍스트)에서 종목명(Ticker), 가격(Price), 신호종류(BUY/SELL)를 정확히 추출하는 수신 엔드포인트 및 가공 유틸리티를 구현합니다.
-  ```
-- 결과/메모: `TelegramSignalParser` 컴포넌트를 추가해 정규식 기반 파싱 유틸리티를 구현했고, `POST /api/signals/webhook` 텍스트 수신 엔드포인트를 컨트롤러에 연결했다. 정상/실패 케이스 단위 테스트도 함께 추가했다.
-
----
-
 ### 날짜: 2026-05-06
 - 목적/상황: README에 있던 프롬프트 기록을 PROMPT.md로 통합
 - 사용한 프롬프트:
@@ -96,27 +82,23 @@
 
 ---
 ### 날짜: 2026년 5월 24일 오후 2시 38분
-- 모드: agent
-- 지시사항:
-  ```
-  - Spring Boot 4.0.6 및 Java 25 환경의 프로젝트에서 데이터베이스 설정을 고도화하기 위한 JPA 엔티티 클래스 생성을 해줘. 아래 요구사항과 가이드라인을 엄격히 준수하여 코드를 작성해줘.
+  - User 엔티티와 @ManyToOne(fetch = FetchType.LAZY), JoinColumn(name = "user_id") 매핑
+  - @PrePersist로 createdAt 자동 주입
+  - 기본 생성자, id/createdAt 제외 전체 필드 생성자, Getter/Setter 포함
 
-  1. 역할 및 목표: 
-  - [REQ-F-002] 매매 신호 DB 저장 및 [REQ-NF-001] 데이터 무결성 보장을 위해 엔티티 구조를 설계.
-  - 패키지 경로: com.stocksignal.entity
+  2. StockSignalRepository.java 리포지토리:
+  - 패키지: com.stocksignal.repository
+  - JpaRepository<StockSignal, Long> 상속
+  - findByTickerIgnoreCaseOrderByCreatedAtDesc(String ticker)
+  - findBySignalTypeOrderByCreatedAtDesc(SignalType signalType)
+  - findTop10ByOrderByCreatedAtDesc()
 
-  1. 신규 엔티티 생성 요구사항:
-  - User.java: id(IDENTITY), username(필수, unique, 50자), password(필수, BCrypt 암호화 해시 저장용 100자), email(이메일 형식, 100자), telegramChatId(50자), telegramBotToken(100자), createdAt(생성 시 현재 시간 자동 주입) 필드를 포함.
-  - SignalMemo.java: id(IDENTITY), memoContent(필수, 1000자), updatedAt(수정 시 현재 시간 자동 갱신) 필드를 포함하며, StockSignal 엔티티 및 User 엔티티와 각각 지연 로딩(FetchType.LAZY) 방식의 다대일(@ManyToOne) 연관 관계를 맺음.
-  - MorningBriefing.java: id(IDENTITY), title(필수, 255자), content(필수, TEXT 타입 정의), marketStatus(500자), publishedAt(생성 시 현재 시간 자동 주입) 필드를 포함.
-
-  1. 기존 엔티티 수정 사항:
-  - StockSignal.java 엔티티 하단에 유저별 귀속 관리를 위해 User 엔티티와의 지연 로딩(FetchType.LAZY) 방식 다대일(@ManyToOne) 연관 관계 필드(private User user;)와 그에 따른 Getter/Setter를 추가해줘.
-
-  모든 엔티티 클래스에는 자카르타 엔티티 애노테이션(jakarta.persistence.*) 및 유효성 검증 라이브러리(jakarta.validation.constraints.*)를 적절히 사용해 주고, 기본 생성자와 필요한 전체 필드 생성자, Getters/Setters를 빠짐없이 구현해줘.
+  3. 제약 조건:
+  - jakarta.persistence.* 및 jakarta.validation.constraints.*(@NotBlank, @NotNull, @Positive) 애노테이션 적용
+  - 기존 서비스/컨트롤러 호출부와 호환되도록 생성자 시그니처는 역호환성을 유지해줘.
   ```
 ---
-### 날짜: 2026년 5월 24일 오후 2시 48분
+ 결과/메모: [StockSignal.java](../src/main/java/com/stocksignal/entity/StockSignal.java)에서 길이 제약과 `User` 연관관계를 정리했고, 4-인자 생성자는 유지하면서 `user`를 받는 전체 필드 생성자를 추가했다. [StockSignalRepository.java](../src/main/java/com/stocksignal/repository/StockSignalRepository.java)에는 요구한 3개의 쿼리 메서드가 이미 정확한 네이밍으로 존재해 별도 수정은 없었다. VS Code Java 진단으로 수정 파일의 에러가 없는 것을 확인했지만, 현재 환경에는 Maven 실행 파일이 없어 전체 `mvn test`는 수행하지 못했다.
 - 모드: agent
 - 지시사항:
   ```
@@ -242,6 +224,45 @@
   - 서버측 Model 주입 없이도 브라우저가 이 파일을 읽었을 때 500 에러 없이 단번에 100% 순수하게 렌더링될 수 있는 완전한 HTML 소스코드만 출력해줘.
   ```
 ---
+
+### 날짜: 2026-06-07
+- 목적/상황: 외부 파이썬 봇 연동을 위한 텔레그램 신호 파싱 및 웹훅 수신 기능 추가
+- 사용한 프롬프트:
+  ```
+[REQ-F-001] 텔레그램 신호 수신 및 파싱
+
+외부 파이썬 봇으로부터 전달받은 텍스트 신호(정형/비정형 텍스트)에서 종목명(Ticker), 가격(Price), 신호종류(BUY/SELL)를 정확히 추출하는 수신 엔드포인트 및 가공 유틸리티를 구현합니다.
+  ```
+- 결과/메모: `TelegramSignalParser` 컴포넌트를 추가해 정규식 기반 파싱 유틸리티를 구현했고, `POST /api/signals/webhook` 텍스트 수신 엔드포인트를 컨트롤러에 연결했다. 정상/실패 케이스 단위 테스트도 함께 추가했다.
+
+---
+
+### 날짜: 2026-06-08
+- 모드: agent
+- 지시사항:
+  ```
+  - Spring Boot 4.0.6 및 Java 25 환경의 프로젝트에서 [REQ-F-002] 매매 신호 DB 저장을 위한 JPA 엔티티와 리포지토리를 구현해줘.
+
+  1. StockSignal.java 엔티티:
+  - 패키지: com.stocksignal.entity
+  - 테이블명: stock_signal
+  - id(Long, IDENTITY), ticker(String, 필수, 20자), signalType(SignalType, BUY/SELL, EnumType.STRING, 필수), price(Double, 필수, @Positive), message(String, 500자), createdAt(LocalDateTime, updatable=false)
+  - User 엔티티와 @ManyToOne(fetch = FetchType.LAZY), JoinColumn(name = "user_id") 매핑
+  - @PrePersist로 createdAt 자동 주입
+  - 기본 생성자, id/createdAt 제외 전체 필드 생성자, Getter/Setter 포함
+
+  2. StockSignalRepository.java 리포지토리:
+  - 패키지: com.stocksignal.repository
+  - JpaRepository<StockSignal, Long> 상속
+  - findByTickerIgnoreCaseOrderByCreatedAtDesc(String ticker)
+  - findBySignalTypeOrderByCreatedAtDesc(SignalType signalType)
+  - findTop10ByOrderByCreatedAtDesc()
+
+  3. 제약 조건:
+  - jakarta.persistence.* 및 jakarta.validation.constraints.*(@NotBlank, @NotNull, @Positive) 애노테이션 적용
+  - 기존 서비스/컨트롤러 호출부와 호환되도록 생성자 시그니처는 역호환성을 유지해줘.
+  ```
+- 결과/메모: [StockSignal.java](../src/main/java/com/stocksignal/entity/StockSignal.java)에서 길이 제약과 `User` 연관관계를 정리했고, 4-인자 생성자는 유지하면서 `user`를 받는 전체 필드 생성자를 추가했다. [StockSignalRepository.java](../src/main/java/com/stocksignal/repository/StockSignalRepository.java)에는 요구한 3개의 쿼리 메서드가 이미 정확한 네이밍으로 존재해 별도 수정은 없었다. VS Code Java 진단으로 수정 파일의 에러가 없는 것을 확인했지만, 현재 환경에는 Maven 실행 파일이 없어 전체 `mvn test`는 수행하지 못했다.
 
 
 

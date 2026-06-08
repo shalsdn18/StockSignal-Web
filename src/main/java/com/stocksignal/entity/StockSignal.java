@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 
@@ -20,6 +21,7 @@ public class StockSignal {
 
     /** Stock ticker symbol (e.g. AAPL, TSLA). */
     @NotBlank
+    @Size(max = 20)
     @Column(nullable = false, length = 20)
     private String ticker;
 
@@ -36,6 +38,7 @@ public class StockSignal {
     private Double price;
 
     /** Optional message or reason for the signal. */
+    @Size(max = 500)
     @Column(length = 500)
     private String message;
 
@@ -59,10 +62,15 @@ public class StockSignal {
     }
 
     public StockSignal(String ticker, SignalType signalType, Double price, String message) {
+        this(ticker, signalType, price, message, null);
+    }
+
+    public StockSignal(String ticker, SignalType signalType, Double price, String message, User user) {
         this.ticker = ticker;
         this.signalType = signalType;
         this.price = price;
         this.message = message;
+        this.user = user;
     }
 
     // ---- Getters & Setters ----
