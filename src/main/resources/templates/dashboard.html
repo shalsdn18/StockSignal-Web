@@ -160,11 +160,13 @@
                         <th>Price (USD)</th>
                         <th>Message</th>
                         <th>Received At</th>
+                        <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="signal : ${signals}"
-                        th:classappend="${signal.signalType.name() == 'BUY'} ? ' row-buy' : ' row-sell'">
+                        th:classappend="${signal.signalType.name() == 'BUY'} ? ' row-buy' : ' row-sell'"
+                        th:attr="data-signal-id=${signal.id}">
                         <td th:text="${signal.id}">1</td>
                         <td class="ticker" th:text="${signal.ticker}">AAPL</td>
                         <td>
@@ -175,6 +177,22 @@
                         <td th:text="${'$' + signal.price}">$0.00</td>
                         <td th:text="${signal.message != null ? signal.message : '-'}">-</td>
                         <td th:text="${#temporals.format(signal.createdAt, 'yyyy-MM-dd HH:mm:ss')}">-</td>
+                        <td>
+                            <div class="table-actions" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                                <button type="button"
+                                        class="btn-action btn-memo"
+                                        th:onclick="|openMemoModal([[${signal.id}]])|"
+                                        th:attr="data-signal-id=${signal.id}">
+                                    📝 메모
+                                </button>
+                                <button type="button"
+                                        class="btn-action btn-delete"
+                                        th:onclick="|deleteSignal([[${signal.id}]])|"
+                                        th:attr="data-signal-id=${signal.id}">
+                                    🗑️ 삭제
+                                </button>
+                            </div>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
