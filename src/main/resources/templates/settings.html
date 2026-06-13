@@ -63,7 +63,7 @@
                     <p th:text="${errorMessage}">An error occurred while updating settings.</p>
                 </div>
 
-                <form class="settings-form" th:action="@{/settings}" method="post">
+                <form class="settings-form" th:action="@{/test/settings-save}" method="post">
                     <label class="auth-field">
                         <span>Telegram Chat ID</span>
                         <input type="text"
