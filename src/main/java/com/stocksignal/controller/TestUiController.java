@@ -4,6 +4,7 @@ import com.stocksignal.entity.MorningBriefing;
 import com.stocksignal.entity.SignalType;
 import com.stocksignal.entity.StockSignal;
 import com.stocksignal.entity.User;
+import com.stocksignal.service.MorningBriefingService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,12 @@ import java.util.List;
 
 @Controller
 public class TestUiController {
+
+    private final MorningBriefingService morningBriefingService;
+
+    public TestUiController(MorningBriefingService morningBriefingService) {
+        this.morningBriefingService = morningBriefingService;
+    }
 
     @GetMapping({"/", "/test/dashboard"})
     public String dashboard(Model model) {
@@ -48,11 +55,7 @@ public class TestUiController {
 
     @GetMapping({"/briefing", "/test/briefing"})
     public String briefing(Model model) {
-        MorningBriefing briefing = new MorningBriefing(
-                "🚀 오늘의 AI 증시 요약",
-                "<p>나스닥 <b>1.2% 상승</b></p>",
-                "안정세"
-        );
+        MorningBriefing briefing = morningBriefingService.getLatestBriefing();
 
         model.addAttribute("briefing", briefing);
         model.addAttribute("totalCount", 142);
