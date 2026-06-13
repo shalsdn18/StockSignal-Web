@@ -207,5 +207,29 @@
     </div>
 </div>
 
+<script>
+    function deleteSignal(id) {
+        if (!confirm('정말 삭제하시겠습니까?')) {
+            return;
+        }
+
+        fetch('/api/signals/' + id, {
+            method: 'DELETE'
+        })
+            .then(function (response) {
+                if (response.ok) {
+                    window.location.reload();
+                    return;
+                }
+
+                throw new Error('Delete request failed');
+            })
+            .catch(function (error) {
+                console.error(error);
+                alert('삭제에 실패했습니다.');
+            });
+    }
+</script>
+
 </body>
 </html>

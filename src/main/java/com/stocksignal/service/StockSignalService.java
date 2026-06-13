@@ -49,6 +49,13 @@ public class StockSignalService {
     }
 
     /**
+     * Deletes a stock signal by its ID.
+     */
+    public void deleteSignal(Long id) {
+        repository.deleteById(id);
+    }
+
+    /**
      * Returns all signals ordered by creation time (newest first).
      */
     @Transactional(readOnly = true)

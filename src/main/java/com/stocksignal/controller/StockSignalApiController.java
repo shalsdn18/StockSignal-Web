@@ -71,6 +71,13 @@ public class StockSignalApiController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /** Delete a signal by its database ID. */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSignal(@PathVariable Long id) {
+        signalService.deleteSignal(id);
+        return ResponseEntity.noContent().build();
+    }
+
     /** Filter signals by ticker symbol. */
     @GetMapping("/ticker/{ticker}")
     public ResponseEntity<List<StockSignal>> getSignalsByTicker(
