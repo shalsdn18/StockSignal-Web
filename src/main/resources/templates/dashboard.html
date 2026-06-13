@@ -27,15 +27,15 @@
         <div class="sidebar-stats">
             <div>
                 <span>Total</span>
-                <strong th:text="${totalCount}">0</strong>
+                <strong th:text="${dashboardStatistics.totalCount}">0</strong>
             </div>
             <div>
                 <span>BUY</span>
-                <strong th:text="${buyCount}">0</strong>
+                <strong th:text="${dashboardStatistics.buyCount}">0</strong>
             </div>
             <div>
                 <span>SELL</span>
-                <strong th:text="${sellCount}">0</strong>
+                <strong th:text="${dashboardStatistics.sellCount}">0</strong>
             </div>
         </div>
 
@@ -45,7 +45,7 @@
     <div class="dashboard-content">
         <header class="site-header">
             <div class="container">
-                <p class="eyebrow">REQ-F-004 · REQ-U-001 · REQ-U-004</p>
+                <p class="eyebrow">REQ-F-004 · REQ-F-012 · REQ-U-001 · REQ-U-004</p>
                 <h1>📈 StockSignal Dashboard</h1>
                 <p class="subtitle">Stock Buy / Sell Signal &amp; Morning Briefing System</p>
             </div>
@@ -57,15 +57,31 @@
                 <h2 id="summary-title" class="section-title">Signal Overview</h2>
                 <div class="card card-total">
                     <span class="card-label">Total Signals</span>
-                    <span class="card-value" th:text="${totalCount}">0</span>
+                    <span class="card-value" th:text="${dashboardStatistics.totalCount}">0</span>
                 </div>
                 <div class="card card-buy">
                     <span class="card-label">BUY Signals</span>
-                    <span class="card-value" th:text="${buyCount}">0</span>
+                    <span class="card-value" th:text="${dashboardStatistics.buyCount}">0</span>
                 </div>
                 <div class="card card-sell">
                     <span class="card-label">SELL Signals</span>
-                    <span class="card-value" th:text="${sellCount}">0</span>
+                    <span class="card-value" th:text="${dashboardStatistics.sellCount}">0</span>
+                </div>
+                <div class="card card-winrate">
+                    <span class="card-label">Win Rate</span>
+                    <span class="card-value" th:text="${#numbers.formatDecimal(dashboardStatistics.winRate, 1, 1) + '%'}">0.0%</span>
+                </div>
+                <div class="card card-trades">
+                    <span class="card-label">Completed Trades</span>
+                    <span class="card-value" th:text="${dashboardStatistics.totalTrades}">0</span>
+                </div>
+                <div class="card card-open">
+                    <span class="card-label">Open Positions</span>
+                    <span class="card-value" th:text="${dashboardStatistics.openPositions}">0</span>
+                </div>
+                <div class="card card-profit">
+                    <span class="card-label">Cumulative Profit</span>
+                    <span class="card-value" th:text="'$' + ${#numbers.formatDecimal(dashboardStatistics.cumulativeProfit, 1, 2)}">$0.00</span>
                 </div>
             </section>
 

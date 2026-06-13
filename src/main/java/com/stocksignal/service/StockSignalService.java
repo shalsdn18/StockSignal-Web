@@ -1,5 +1,6 @@
 package com.stocksignal.service;
 
+import com.stocksignal.dto.DashboardStatisticsDto;
 import com.stocksignal.dto.StockSignalRequest;
 import com.stocksignal.entity.SignalMemo;
 import com.stocksignal.entity.SignalType;
@@ -32,15 +33,18 @@ public class StockSignalService {
     private final SignalMemoRepository signalMemoRepository;
     private final UserRepository userRepository;
     private final TelegramNotificationService telegramService;
+    private final SignalStatisticsService signalStatisticsService;
 
     public StockSignalService(StockSignalRepository repository,
                               SignalMemoRepository signalMemoRepository,
                               UserRepository userRepository,
-                              TelegramNotificationService telegramService) {
+                              TelegramNotificationService telegramService,
+                              SignalStatisticsService signalStatisticsService) {
         this.repository = repository;
         this.signalMemoRepository = signalMemoRepository;
         this.userRepository = userRepository;
         this.telegramService = telegramService;
+        this.signalStatisticsService = signalStatisticsService;
     }
 
     /**
@@ -228,6 +232,30 @@ public class StockSignalService {
     @Transactional(readOnly = true)
     public List<StockSignal> getRecentSignals() {
         return repository.findTop10ByOrderByCreatedAtDesc();
+    }
+
+    /**
+     * Calculates overall dashboard statistics based on the entire archived signal history.
+     *
+     * @return {@link DashboardStatisticsDto} containing filtered counts and win-rate analysis
+     */
+    @Transactional(readOnly = true)
+    public DashboardStatisticsDto calculateOverallStatistics() {
+        List<StockSignal> allSignals = repository.findAllByOrderByCreatedAtAsc();
+
+        long buyCount = allSignals.stream()
+                .filter(s -> s.getSignalType() == SignalType.BUY)
+                .count();
+        long sellCount = allSignals.stream()
+                .filter(s -> s.getSignalType() == SignalType.SELL)
+                .count();
+
+        return new DashboardStatisticsDto(
+                allSignals.size(),
+                buyCount,
+                sellCount,
+                signalStatisticsService.calculate(allSignals)
+        );
     }
 
     // ---- helpers ----

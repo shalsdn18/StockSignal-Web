@@ -1,5 +1,6 @@
 package com.stocksignal.controller;
 
+import com.stocksignal.dto.DashboardStatisticsDto;
 import com.stocksignal.entity.SignalType;
 import com.stocksignal.entity.StockSignal;
 import com.stocksignal.service.StockSignalService;
@@ -28,7 +29,7 @@ public class DashboardController {
      * Renders the service-backed dashboard page at {@code /dashboard}.
      * Supports dynamic filtering by ticker, date range, and signal type (all optional, AND-combined).
      */
-        @GetMapping({"/", "/dashboard"})
+    @GetMapping({"/", "/dashboard"})
     public String dashboard(
             @RequestParam(value = "ticker", required = false) String ticker,
             @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -46,18 +47,12 @@ public class DashboardController {
                 signalType
         );
 
-        // Calculate statistics based on filtered results
-        long buyCount = signals.stream()
-                .filter(s -> s.getSignalType().name().equals("BUY"))
-                .count();
-        long sellCount = signals.stream()
-                .filter(s -> s.getSignalType().name().equals("SELL"))
-                .count();
+        // REQ-F-012: dashboard statistics across the entire archived dataset
+        DashboardStatisticsDto stats = signalService.calculateOverallStatistics();
 
         model.addAttribute("signals", signals);
-        model.addAttribute("totalCount", signals.size());
-        model.addAttribute("buyCount", buyCount);
-        model.addAttribute("sellCount", sellCount);
+        model.addAttribute("dashboardStatistics", stats);
+        model.addAttribute("statistics", stats);
 
         return "dashboard";
     }

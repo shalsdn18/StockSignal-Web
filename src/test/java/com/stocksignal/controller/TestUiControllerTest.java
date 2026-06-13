@@ -41,7 +41,7 @@ class TestUiControllerTest {
         );
         given(morningBriefingService.getLatestBriefing()).willReturn(sampleBriefing);
 
-        mockMvc.perform(get("/"))
+        mockMvc.perform(get("/test/dashboard"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("dashboard"));
 
@@ -67,8 +67,8 @@ class TestUiControllerTest {
     void postTestUiEndpoints_redirectBackToScreens() throws Exception {
         TestUiController controller = new TestUiController(morningBriefingService);
 
-        assertEquals("redirect:/login", controller.submitLogin());
-        assertEquals("redirect:/register", controller.submitRegister());
+        assertEquals("redirect:/", controller.submitLogin());
+        assertEquals("redirect:/login", controller.submitRegister());
         assertEquals("redirect:/settings", controller.submitSettings());
     }
 

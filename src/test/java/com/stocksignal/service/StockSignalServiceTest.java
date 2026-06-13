@@ -1,5 +1,7 @@
 package com.stocksignal.service;
 
+import com.stocksignal.dto.DashboardStatisticsDto;
+import com.stocksignal.dto.SignalStatistics;
 import com.stocksignal.dto.StockSignalRequest;
 import com.stocksignal.entity.SignalType;
 import com.stocksignal.entity.StockSignal;
@@ -29,6 +31,9 @@ class StockSignalServiceTest {
 
     @Mock
     private TelegramNotificationService telegramService;
+
+    @Mock
+    private SignalStatisticsService signalStatisticsService;
 
     @InjectMocks
     private StockSignalService service;
@@ -156,6 +161,30 @@ class StockSignalServiceTest {
         List<StockSignal> result = service.getSignalsByType(SignalType.BUY);
 
         assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void calculateOverallStatistics_returnsDashboardStatisticsDto() {
+        StockSignal sellSignal = new StockSignal("TSLA", SignalType.SELL, 200.0, null);
+        sellSignal.setCreatedAt(LocalDateTime.now());
+        List<StockSignal> allSignals = List.of(sampleSignal, sellSignal);
+        SignalStatistics stats = new SignalStatistics(1, 1, 0, 100.0, 0, 10.0);
+
+        when(repository.findAllByOrderByCreatedAtAsc()).thenReturn(allSignals);
+        when(signalStatisticsService.calculate(allSignals)).thenReturn(stats);
+
+        DashboardStatisticsDto dto = service.calculateOverallStatistics();
+
+        assertThat(dto).isNotNull();
+        assertThat(dto.getTotalCount()).isEqualTo(2);
+        assertThat(dto.getBuyCount()).isEqualTo(1L);
+        assertThat(dto.getSellCount()).isEqualTo(1L);
+        assertThat(dto.getTotalTrades()).isEqualTo(1L);
+        assertThat(dto.getWinningTrades()).isEqualTo(1L);
+        assertThat(dto.getWinRate()).isEqualTo(100.0);
+        assertThat(dto.getCumulativeProfit()).isEqualTo(10.0);
+        verify(repository).findAllByOrderByCreatedAtAsc();
+        verify(signalStatisticsService).calculate(allSignals);
     }
 
     @Test
