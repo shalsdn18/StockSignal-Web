@@ -7,6 +7,9 @@ import com.stocksignal.repository.StockSignalRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,6 +70,66 @@ public class StockSignalService {
     @Transactional(readOnly = true)
     public List<StockSignal> searchSignalsByTicker(String keyword) {
         return repository.findByTickerContainingIgnoreCaseOrderByCreatedAtDesc(keyword);
+    }
+
+    /**
+     * Searches signals within a date range, newest first.
+     * Converts LocalDate to LocalDateTime for database queries.
+     *
+     * @param startDate date range start (or null for no lower bound)
+     * @param endDate date range end (or null for no upper bound)
+     * @return signals within the range, or all signals if both dates are null
+     */
+    @Transactional(readOnly = true)
+    public List<StockSignal> searchSignalsByDateRange(LocalDate startDate, LocalDate endDate) {
+        // Normalize dates: swap if endDate < startDate
+        if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
+            LocalDate temp = startDate;
+            startDate = endDate;
+            endDate = temp;
+        }
+
+        LocalDateTime startDateTime = startDate != null
+                ? startDate.atStartOfDay()
+                : null;
+        LocalDateTime endDateTime = endDate != null
+                ? endDate.atTime(LocalTime.MAX)
+                : null;
+
+        if (startDateTime != null && endDateTime != null) {
+            return repository.findByDateRangeOrderByCreatedAtDesc(startDateTime, endDateTime);
+        } else if (startDateTime != null) {
+            // Only start date provided: from start date to now
+            return repository.findByDateRangeOrderByCreatedAtDesc(startDateTime, LocalDateTime.now());
+        } else if (endDateTime != null) {
+            // Only end date provided: from epoch to end date
+            return repository.findByDateRangeOrderByCreatedAtDesc(LocalDateTime.MIN, endDateTime);
+        } else {
+            // No dates provided: return all signals
+            return getAllSignals();
+        }
+    }
+
+    /**
+     * Searches signals by ticker keyword and date range, newest first.
+     */
+    @Transactional(readOnly = true)
+    public List<StockSignal> searchSignalsByTickerAndDateRange(String keyword, LocalDate startDate, LocalDate endDate) {
+        // Normalize dates: swap if endDate < startDate
+        if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
+            LocalDate temp = startDate;
+            startDate = endDate;
+            endDate = temp;
+        }
+
+        LocalDateTime startDateTime = startDate != null
+                ? startDate.atStartOfDay()
+                : LocalDateTime.MIN;
+        LocalDateTime endDateTime = endDate != null
+                ? endDate.atTime(LocalTime.MAX)
+                : LocalDateTime.now();
+
+        return repository.findByTickerContainingAndDateRangeOrderByCreatedAtDesc(keyword, startDateTime, endDateTime);
     }
 
     /**

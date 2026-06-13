@@ -3,8 +3,11 @@ package com.stocksignal.repository;
 import com.stocksignal.entity.SignalType;
 import com.stocksignal.entity.StockSignal;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -27,4 +30,19 @@ public interface StockSignalRepository extends JpaRepository<StockSignal, Long> 
 
     /** Find the most recent N signals across all tickers. */
     List<StockSignal> findTop10ByOrderByCreatedAtDesc();
+
+    /** Find signals within a date range, newest first. */
+    @Query("SELECT s FROM StockSignal s WHERE s.createdAt >= :startDateTime AND s.createdAt <= :endDateTime ORDER BY s.createdAt DESC")
+    List<StockSignal> findByDateRangeOrderByCreatedAtDesc(
+            @Param("startDateTime") LocalDateTime startDateTime,
+            @Param("endDateTime") LocalDateTime endDateTime
+    );
+
+    /** Find signals by ticker and within a date range, newest first. */
+    @Query("SELECT s FROM StockSignal s WHERE LOWER(s.ticker) LIKE LOWER(CONCAT('%', :keyword, '%')) AND s.createdAt >= :startDateTime AND s.createdAt <= :endDateTime ORDER BY s.createdAt DESC")
+    List<StockSignal> findByTickerContainingAndDateRangeOrderByCreatedAtDesc(
+            @Param("keyword") String keyword,
+            @Param("startDateTime") LocalDateTime startDateTime,
+            @Param("endDateTime") LocalDateTime endDateTime
+    );
 }

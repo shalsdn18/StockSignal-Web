@@ -157,4 +157,50 @@ class StockSignalServiceTest {
 
         assertThat(result).hasSize(1);
     }
+
+    @Test
+    void searchSignalsByDateRange_usesDatabaseQuery() {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        when(repository.findByDateRangeOrderByCreatedAtDesc(
+                org.mockito.ArgumentMatchers.argThat(dt -> dt.toLocalDate().equals(today)),
+                org.mockito.ArgumentMatchers.any(java.time.LocalDateTime.class)
+        )).thenReturn(List.of(sampleSignal));
+
+        List<StockSignal> result = service.searchSignalsByDateRange(today, today);
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void searchSignalsByDateRange_swapsWhenEndDateIsBeforeStartDate() {
+        java.time.LocalDate start = java.time.LocalDate.of(2026, 6, 13);
+        java.time.LocalDate end = java.time.LocalDate.of(2026, 6, 10);
+
+        when(repository.findByDateRangeOrderByCreatedAtDesc(
+                org.mockito.ArgumentMatchers.argThat(dt -> dt.toLocalDate().equals(end)),
+                org.mockito.ArgumentMatchers.any(java.time.LocalDateTime.class)
+        )).thenReturn(List.of());
+
+        service.searchSignalsByDateRange(start, end);
+
+        // Verify that the swapped (normalized) dates were used
+        verify(repository).findByDateRangeOrderByCreatedAtDesc(
+                org.mockito.ArgumentMatchers.argThat(dt -> dt.toLocalDate().equals(end)),
+                org.mockito.ArgumentMatchers.any(java.time.LocalDateTime.class)
+        );
+    }
+
+    @Test
+    void searchSignalsByTickerAndDateRange_combinedFiltering() {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        when(repository.findByTickerContainingAndDateRangeOrderByCreatedAtDesc(
+                org.mockito.ArgumentMatchers.eq("AAP"),
+                org.mockito.ArgumentMatchers.argThat(dt -> dt.toLocalDate().equals(today)),
+                org.mockito.ArgumentMatchers.any(java.time.LocalDateTime.class)
+        )).thenReturn(List.of(sampleSignal));
+
+        List<StockSignal> result = service.searchSignalsByTickerAndDateRange("AAP", today, today);
+
+        assertThat(result).hasSize(1);
+    }
 }

@@ -86,6 +86,20 @@
                     </label>
 
                     <label class="filter-field">
+                        <span>Start Date</span>
+                        <input type="date"
+                               name="startDate"
+                               th:value="${param.startDate}"/>
+                    </label>
+
+                    <label class="filter-field">
+                        <span>End Date</span>
+                        <input type="date"
+                               name="endDate"
+                               th:value="${param.endDate}"/>
+                    </label>
+
+                    <label class="filter-field">
                         <span>Signal Type</span>
                         <select name="signalType">
                             <option value="" th:selected="${param.signalType == null or #lists.isEmpty(param.signalType)}">All</option>
