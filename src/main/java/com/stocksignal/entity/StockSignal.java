@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.time.LocalDateTime;
 
 /**
@@ -50,6 +52,11 @@ public class StockSignal {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    /** Memo list associated with this signal. Latest memo is kept first for dashboard display. */
+    @OneToMany(mappedBy = "stockSignal", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OrderBy("updatedAt DESC")
+    private List<SignalMemo> memos = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
@@ -129,5 +136,13 @@ public class StockSignal {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public List<SignalMemo> getMemos() {
+        return memos;
+    }
+
+    public void setMemos(List<SignalMemo> memos) {
+        this.memos = memos;
     }
 }

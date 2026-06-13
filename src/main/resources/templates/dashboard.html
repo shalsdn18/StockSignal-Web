@@ -159,6 +159,7 @@
                         <th>Type</th>
                         <th>Price (USD)</th>
                         <th>Message</th>
+                        <th>Memo</th>
                         <th>Received At</th>
                         <th>Actions</th>
                     </tr>
@@ -176,6 +177,7 @@
                         </td>
                         <td th:text="${'$' + signal.price}">$0.00</td>
                         <td th:text="${signal.message != null ? signal.message : '-'}">-</td>
+                        <td th:text="${!#lists.isEmpty(signal.memos) ? signal.memos[0].memoContent : '-'}">-</td>
                         <td th:text="${#temporals.format(signal.createdAt, 'yyyy-MM-dd HH:mm:ss')}">-</td>
                         <td>
                             <div class="table-actions" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
