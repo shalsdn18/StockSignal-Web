@@ -78,6 +78,13 @@ public class StockSignalApiController {
         return ResponseEntity.noContent().build();
     }
 
+    /** Save a memo for a specific signal. */
+    @PostMapping(value = "/{id}/memo", consumes = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<Void> saveMemo(@PathVariable Long id, @RequestBody String memoContent) {
+        signalService.saveMemo(id, memoContent);
+        return ResponseEntity.ok().build();
+    }
+
     /** Filter signals by ticker symbol. */
     @GetMapping("/ticker/{ticker}")
     public ResponseEntity<List<StockSignal>> getSignalsByTicker(

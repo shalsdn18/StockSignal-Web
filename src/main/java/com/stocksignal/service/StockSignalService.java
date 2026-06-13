@@ -1,9 +1,13 @@
 package com.stocksignal.service;
 
 import com.stocksignal.dto.StockSignalRequest;
+import com.stocksignal.entity.SignalMemo;
 import com.stocksignal.entity.SignalType;
 import com.stocksignal.entity.StockSignal;
+import com.stocksignal.entity.User;
+import com.stocksignal.repository.SignalMemoRepository;
 import com.stocksignal.repository.StockSignalRepository;
+import com.stocksignal.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,12 +24,22 @@ import java.util.Optional;
 @Transactional
 public class StockSignalService {
 
+    private static final String DEFAULT_MEMO_USERNAME = "memo-user";
+    private static final String DEFAULT_MEMO_PASSWORD = "memo-password";
+    private static final String DEFAULT_MEMO_EMAIL = "memo-user@stocksignal.local";
+
     private final StockSignalRepository repository;
+    private final SignalMemoRepository signalMemoRepository;
+    private final UserRepository userRepository;
     private final TelegramNotificationService telegramService;
 
     public StockSignalService(StockSignalRepository repository,
+                              SignalMemoRepository signalMemoRepository,
+                              UserRepository userRepository,
                               TelegramNotificationService telegramService) {
         this.repository = repository;
+        this.signalMemoRepository = signalMemoRepository;
+        this.userRepository = userRepository;
         this.telegramService = telegramService;
     }
 
@@ -53,6 +67,25 @@ public class StockSignalService {
      */
     public void deleteSignal(Long id) {
         repository.deleteById(id);
+    }
+
+    /**
+     * Saves a memo for the given signal using a persisted mock user when authentication is absent.
+     */
+    public void saveMemo(Long signalId, String content) {
+        StockSignal stockSignal = repository.findById(signalId)
+                .orElseThrow(() -> new IllegalArgumentException("Signal not found: " + signalId));
+
+        String memoText = content != null ? content.trim() : "";
+        if (memoText.isEmpty()) {
+            throw new IllegalArgumentException("Memo content must not be blank");
+        }
+
+        User memoUser = userRepository.findByUsername(DEFAULT_MEMO_USERNAME)
+                .orElseGet(this::createDefaultMemoUser);
+
+        SignalMemo memo = new SignalMemo(memoText, stockSignal, memoUser);
+        signalMemoRepository.save(memo);
     }
 
     /**
@@ -212,5 +245,16 @@ public class StockSignalService {
                 signal.getPrice(),
                 message
         );
+    }
+
+    private User createDefaultMemoUser() {
+        User user = new User(
+                DEFAULT_MEMO_USERNAME,
+                DEFAULT_MEMO_PASSWORD,
+                DEFAULT_MEMO_EMAIL,
+                null,
+                null
+        );
+        return userRepository.save(user);
     }
 }

@@ -208,6 +208,38 @@
 </div>
 
 <script>
+    function openMemoModal(id) {
+        var memoContent = prompt('이 신호에 대한 투자 전략 메모를 입력하세요:');
+
+        if (memoContent === null) {
+            return;
+        }
+
+        if (memoContent.trim() === '') {
+            return;
+        }
+
+        fetch('/api/signals/' + id + '/memo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain'
+            },
+            body: memoContent
+        })
+            .then(function (response) {
+                if (response.ok) {
+                    window.location.reload();
+                    return;
+                }
+
+                throw new Error('Memo request failed');
+            })
+            .catch(function (error) {
+                console.error(error);
+                alert('메모 저장에 실패했습니다.');
+            });
+    }
+
     function deleteSignal(id) {
         if (!confirm('정말 삭제하시겠습니까?')) {
             return;
