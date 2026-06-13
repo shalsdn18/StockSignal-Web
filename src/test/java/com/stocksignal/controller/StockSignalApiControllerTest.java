@@ -6,37 +6,41 @@ import com.stocksignal.entity.SignalType;
 import com.stocksignal.entity.StockSignal;
 import com.stocksignal.service.StockSignalService;
 import com.stocksignal.util.TelegramSignalParser;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(StockSignalApiController.class)
 class StockSignalApiControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
+    private StockSignalService signalService;
+    private TelegramSignalParser telegramSignalParser;
     private ObjectMapper objectMapper;
 
-    @MockitoBean
-    private StockSignalService signalService;
+    @BeforeEach
+    void setUp() {
+        signalService = mock(StockSignalService.class);
+        telegramSignalParser = mock(TelegramSignalParser.class);
+        objectMapper = new ObjectMapper();
 
-    @MockitoBean
-    private TelegramSignalParser telegramSignalParser;
+        StockSignalApiController controller = new StockSignalApiController(signalService, telegramSignalParser);
+        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    }
 
     private StockSignal buildSignal(String ticker, SignalType type, double price) {
         StockSignal s = new StockSignal(ticker, type, price, "note");
