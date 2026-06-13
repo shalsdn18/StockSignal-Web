@@ -4,47 +4,47 @@ import com.stocksignal.entity.SignalType;
 import com.stocksignal.entity.StockSignal;
 import com.stocksignal.service.StockSignalService;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.ui.ConcurrentModel;
+import org.springframework.ui.Model;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-@WebMvcTest(DashboardController.class)
 class DashboardControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
-    private StockSignalService signalService;
+    private final StockSignalService signalService = org.mockito.Mockito.mock(StockSignalService.class);
+    private final DashboardController controller = new DashboardController(signalService);
 
     @Test
-    void dashboard_dashboardPath_returnsOkAndDashboardView() throws Exception {
+    void dashboard_populatesSignalsAndStats() {
         StockSignal s = new StockSignal("AAPL", SignalType.BUY, 180.0, "test");
         s.setCreatedAt(LocalDateTime.now());
         when(signalService.getAllSignals()).thenReturn(List.of(s));
-        when(signalService.getRecentSignals()).thenReturn(List.of(s));
 
-        mockMvc.perform(get("/dashboard"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("dashboard"))
-                .andExpect(model().attributeExists("signals", "totalCount", "buyCount", "sellCount"));
+        Model model = new ConcurrentModel();
+
+        String viewName = controller.dashboard(model);
+
+        org.assertj.core.api.Assertions.assertThat(viewName).isEqualTo("dashboard");
+        org.assertj.core.api.Assertions.assertThat(model.getAttribute("signals")).isEqualTo(List.of(s));
+        org.assertj.core.api.Assertions.assertThat(model.getAttribute("totalCount")).isEqualTo(1);
+        org.assertj.core.api.Assertions.assertThat(model.getAttribute("buyCount")).isEqualTo(1L);
+        org.assertj.core.api.Assertions.assertThat(model.getAttribute("sellCount")).isEqualTo(0L);
     }
 
     @Test
-    void dashboard_dashboardPath_returnsOkAndDashboardViewWithoutSignals() throws Exception {
+    void dashboard_handlesEmptySignals() {
         when(signalService.getAllSignals()).thenReturn(List.of());
-        when(signalService.getRecentSignals()).thenReturn(List.of());
 
-        mockMvc.perform(get("/dashboard"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("dashboard"));
+        Model model = new ConcurrentModel();
+
+        String viewName = controller.dashboard(model);
+
+        org.assertj.core.api.Assertions.assertThat(viewName).isEqualTo("dashboard");
+        org.assertj.core.api.Assertions.assertThat(model.getAttribute("signals")).isEqualTo(List.of());
+        org.assertj.core.api.Assertions.assertThat(model.getAttribute("totalCount")).isEqualTo(0);
+        org.assertj.core.api.Assertions.assertThat(model.getAttribute("buyCount")).isEqualTo(0L);
+        org.assertj.core.api.Assertions.assertThat(model.getAttribute("sellCount")).isEqualTo(0L);
     }
 }

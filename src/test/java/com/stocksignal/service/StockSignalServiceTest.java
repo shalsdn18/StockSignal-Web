@@ -82,18 +82,29 @@ class StockSignalServiceTest {
     }
 
     @Test
+    void getAllSignals_usesRepositoryOrderedQuery() {
+        when(repository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(sampleSignal));
+
+        List<StockSignal> result = service.getAllSignals();
+
+        assertThat(result).hasSize(1);
+        verify(repository).findAllByOrderByCreatedAtDesc();
+    }
+
+    @Test
     void getAllSignals_returnsListSortedNewestFirst() {
         StockSignal older = new StockSignal("GOOG", SignalType.BUY, 100.0, null);
         older.setCreatedAt(LocalDateTime.now().minusDays(1));
         StockSignal newer = new StockSignal("MSFT", SignalType.SELL, 200.0, null);
         newer.setCreatedAt(LocalDateTime.now());
 
-        when(repository.findAll()).thenReturn(List.of(older, newer));
+        when(repository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(newer, older));
 
         List<StockSignal> result = service.getAllSignals();
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getTicker()).isEqualTo("MSFT");
+        verify(repository).findAllByOrderByCreatedAtDesc();
     }
 
     @Test

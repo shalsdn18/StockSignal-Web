@@ -50,10 +50,7 @@ public class StockSignalService {
      */
     @Transactional(readOnly = true)
     public List<StockSignal> getAllSignals() {
-        return repository.findAll()
-                .stream()
-                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
-                .toList();
+        return repository.findAllByOrderByCreatedAtDesc();
     }
 
     /**

@@ -25,19 +25,17 @@ public class DashboardController {
      */
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        List<StockSignal> allSignals = signalService.getAllSignals();
-        List<StockSignal> recentSignals = signalService.getRecentSignals();
+        List<StockSignal> signals = signalService.getAllSignals();
 
-        long buyCount = allSignals.stream()
+        long buyCount = signals.stream()
                 .filter(s -> s.getSignalType().name().equals("BUY"))
                 .count();
-        long sellCount = allSignals.stream()
+        long sellCount = signals.stream()
                 .filter(s -> s.getSignalType().name().equals("SELL"))
                 .count();
 
-        model.addAttribute("signals", allSignals);
-        model.addAttribute("recentSignals", recentSignals);
-        model.addAttribute("totalCount", allSignals.size());
+        model.addAttribute("signals", signals);
+        model.addAttribute("totalCount", signals.size());
         model.addAttribute("buyCount", buyCount);
         model.addAttribute("sellCount", sellCount);
 

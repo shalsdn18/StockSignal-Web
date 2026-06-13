@@ -13,6 +13,9 @@ import java.util.List;
 @Repository
 public interface StockSignalRepository extends JpaRepository<StockSignal, Long> {
 
+    /** Find all signals ordered by creation time, newest first. */
+    List<StockSignal> findAllByOrderByCreatedAtDesc();
+
     /** Find all signals for a given ticker, newest first. */
     List<StockSignal> findByTickerIgnoreCaseOrderByCreatedAtDesc(String ticker);
 
