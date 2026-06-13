@@ -40,9 +40,7 @@ public class StockSignalService {
                 request.getMessage()
         );
         StockSignal saved = repository.save(signal);
-
-        String notificationText = buildNotificationText(saved);
-        telegramService.sendMessage(notificationText);
+        telegramService.sendMessage(buildNotificationText(saved));
 
         return saved;
     }
@@ -93,14 +91,17 @@ public class StockSignalService {
     // ---- helpers ----
 
     private String buildNotificationText(StockSignal signal) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("\uD83D\uDCC8 Stock Signal Alert\n");
-        sb.append("Ticker: ").append(signal.getTicker()).append("\n");
-        sb.append("Type:   ").append(signal.getSignalType()).append("\n");
-        sb.append("Price:  $").append(signal.getPrice()).append("\n");
-        if (signal.getMessage() != null && !signal.getMessage().isBlank()) {
-            sb.append("Note:   ").append(signal.getMessage());
+        String message = signal.getMessage();
+        if (message == null || message.isBlank()) {
+            message = "-";
         }
-        return sb.toString();
+
+        return String.format(
+                "\uD83D\uDCC8 Stock Signal Alert%nTicker: %s%nType: %s%nPrice: $%.2f%nMessage: %s",
+                signal.getTicker(),
+                signal.getSignalType(),
+                signal.getPrice(),
+                message
+        );
     }
 }

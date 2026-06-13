@@ -17,7 +17,9 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class StockSignalServiceTest {
@@ -55,7 +57,10 @@ class StockSignalServiceTest {
         assertThat(result.getTicker()).isEqualTo("AAPL");
         assertThat(result.getSignalType()).isEqualTo(SignalType.BUY);
         verify(repository).save(any(StockSignal.class));
-        verify(telegramService).sendMessage(anyString());
+        verify(telegramService).sendMessage(contains("Ticker: AAPL"));
+        verify(telegramService).sendMessage(contains("Type: BUY"));
+        verify(telegramService).sendMessage(contains("Price: $182.50"));
+        verify(telegramService).sendMessage(contains("Message: Test signal"));
     }
 
     @Test

@@ -46,7 +46,7 @@ public class TelegramNotificationService {
      * @param message the text to send
      */
     public void sendMessage(String message) {
-        if (botToken.isBlank() || chatId.isBlank()) {
+        if (!isConfigured()) {
             log.info("[Telegram - not configured] {}", message);
             return;
         }
@@ -56,7 +56,12 @@ public class TelegramNotificationService {
             restTemplate.getForObject(url, String.class);
             log.info("Telegram notification sent: {}", message);
         } catch (RestClientException e) {
-            log.error("Failed to send Telegram notification: {}", e.getMessage());
+            log.error("Failed to send Telegram notification", e);
         }
+    }
+
+    private boolean isConfigured() {
+        return botToken != null && !botToken.isBlank()
+                && chatId != null && !chatId.isBlank();
     }
 }
