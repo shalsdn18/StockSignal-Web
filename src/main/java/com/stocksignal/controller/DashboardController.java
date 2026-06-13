@@ -5,6 +5,7 @@ import com.stocksignal.service.StockSignalService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -24,8 +25,11 @@ public class DashboardController {
      * Renders the service-backed dashboard page at {@code /dashboard}.
      */
     @GetMapping("/dashboard")
-    public String dashboard(Model model) {
-        List<StockSignal> signals = signalService.getAllSignals();
+    public String dashboard(@RequestParam(value = "ticker", required = false) String ticker,
+                            Model model) {
+        List<StockSignal> signals = (ticker != null && !ticker.isBlank())
+                ? signalService.searchSignalsByTicker(ticker)
+                : signalService.getAllSignals();
 
         long buyCount = signals.stream()
                 .filter(s -> s.getSignalType().name().equals("BUY"))

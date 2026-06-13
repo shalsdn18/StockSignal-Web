@@ -127,6 +127,17 @@ class StockSignalServiceTest {
     }
 
     @Test
+    void searchSignalsByTicker_usesContainsIgnoreCaseQuery() {
+        when(repository.findByTickerContainingIgnoreCaseOrderByCreatedAtDesc("AAP"))
+                .thenReturn(List.of(sampleSignal));
+
+        List<StockSignal> result = service.searchSignalsByTicker("AAP");
+
+        assertThat(result).hasSize(1);
+        verify(repository).findByTickerContainingIgnoreCaseOrderByCreatedAtDesc("AAP");
+    }
+
+    @Test
     void getSignalsByTicker_delegatesToRepository() {
         when(repository.findByTickerIgnoreCaseOrderByCreatedAtDesc("AAPL"))
                 .thenReturn(List.of(sampleSignal));

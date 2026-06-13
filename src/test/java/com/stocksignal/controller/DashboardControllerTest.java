@@ -24,7 +24,24 @@ class DashboardControllerTest {
 
         Model model = new ConcurrentModel();
 
-        String viewName = controller.dashboard(model);
+        String viewName = controller.dashboard(null, model);
+
+        org.assertj.core.api.Assertions.assertThat(viewName).isEqualTo("dashboard");
+        org.assertj.core.api.Assertions.assertThat(model.getAttribute("signals")).isEqualTo(List.of(s));
+        org.assertj.core.api.Assertions.assertThat(model.getAttribute("totalCount")).isEqualTo(1);
+        org.assertj.core.api.Assertions.assertThat(model.getAttribute("buyCount")).isEqualTo(1L);
+        org.assertj.core.api.Assertions.assertThat(model.getAttribute("sellCount")).isEqualTo(0L);
+    }
+
+    @Test
+    void dashboard_usesTickerSearchWhenTickerProvided() {
+        StockSignal s = new StockSignal("AAPL", SignalType.BUY, 180.0, "test");
+        s.setCreatedAt(LocalDateTime.now());
+        when(signalService.searchSignalsByTicker("AAP")).thenReturn(List.of(s));
+
+        Model model = new ConcurrentModel();
+
+        String viewName = controller.dashboard("AAP", model);
 
         org.assertj.core.api.Assertions.assertThat(viewName).isEqualTo("dashboard");
         org.assertj.core.api.Assertions.assertThat(model.getAttribute("signals")).isEqualTo(List.of(s));
@@ -39,7 +56,7 @@ class DashboardControllerTest {
 
         Model model = new ConcurrentModel();
 
-        String viewName = controller.dashboard(model);
+        String viewName = controller.dashboard(null, model);
 
         org.assertj.core.api.Assertions.assertThat(viewName).isEqualTo("dashboard");
         org.assertj.core.api.Assertions.assertThat(model.getAttribute("signals")).isEqualTo(List.of());

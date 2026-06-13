@@ -264,8 +264,110 @@
   ```
 - 결과/메모: [StockSignal.java](../src/main/java/com/stocksignal/entity/StockSignal.java)에서 길이 제약과 `User` 연관관계를 정리했고, 4-인자 생성자는 유지하면서 `user`를 받는 전체 필드 생성자를 추가했다. [StockSignalRepository.java](../src/main/java/com/stocksignal/repository/StockSignalRepository.java)에는 요구한 3개의 쿼리 메서드가 이미 정확한 네이밍으로 존재해 별도 수정은 없었다. VS Code Java 진단으로 수정 파일의 에러가 없는 것을 확인했지만, 현재 환경에는 Maven 실행 파일이 없어 전체 `mvn test`는 수행하지 못했다.
 
+- 모드: agent
+- 지시사항:
+  ```
+  @workspace
+StockSignal-Web 프로젝트의 [REQ-F-003] 실시간 알림 재전송 기능을 구현해줘. 
+서비스 레이어에서 DB 저장이 성공하는 즉시 트랜잭션 내에서 알림을 재발송하는 로직을 작성해야 해.
 
+# 핵심 요구사항
+1. TelegramNotificationService.java
+- RestTemplate을 사용하여 Telegram Bot API (https://api.telegram.org/bot{token}/sendMessage)로 HTTP GET/POST 요청을 전송하는 sendMessage(String message) 메서드 구현.
+- @Value를 통해 "telegram.bot.token"과 "telegram.bot.chat-id" 속성을 주입받을 것.
+- 두 설정값 중 하나라도 비어있으면 API를 호출하지 않고 Info 레벨 로그만 남기도록 예외(방어) 로직 추가.
+- API 호출 시 발생하는 RestClientException을 try-catch로 잡아 Error 로그를 남기고 스레드 패닉을 방지할 것.
 
+2. StockSignalService.java
+- createSignal(StockSignalRequest request) 메서드 내에서 repository.save(signal) 로직 직후 telegramService.sendMessage()를 호출할 것.
+- 전송할 메시지는 가독성을 위해 별도의 private 메서드(buildNotificationText)를 만들어 종목명(Ticker), 매매타입(Type), 가격(Price), 메모(Message)를 조합하여 포맷팅할 것.
 
+3. 제약 조건
+- 알림 전송 실패(HTTP 오류 등)가 DB 저장 트랜잭션을 롤백시키지 않도록 설계할 것.
+- Java 17+ 및 Spring Boot 3+ (또는 명시된 4.0.6) 문법 표준을 준수할 것.
+  ```
 
+- 결과/메모: REQ-F-003 실시간 알림 재전송 기능을 구현했습니다.
+
+StockSignalService.createSignal()에서 DB 저장 직후 Telegram 알림을 바로 전송하도록 연결했습니다.
+알림 메시지는 Ticker, Type, Price, Message를 포함하도록 별도 메서드로 포맷팅했습니다.
+TelegramNotificationService는 telegram.bot.token, telegram.bot.chat-id 값이 비어 있으면 API를 호출하지 않고 info 로그만 남기도록 방어 로직을 추가했습니다.
+Telegram API 호출 중 발생하는 RestClientException은 내부에서 처리해 저장 트랜잭션에 영향을 주지 않도록 했습니다.
+검증도 완료했습니다.
+
+서비스 단위 테스트 추가
+관련 테스트 8개 통과
+
+### 날짜: 2026-06-13
+- 모드: agent
+- 지시사항:
+  ```
+ @workspace
+StockSignal-Web 프로젝트의 [REQ-F-004] 신호 이력 전체 조회 기능을 최적화 및 완성하려고 해.
+웹 대시보드 진입 시 전체 매매 신호를 최신순(내림차순)으로 조회하여 테이블에 바인딩해야 해.
+
+# 핵심 요구사항
+1. StockSignalRepository.java
+- 모든 데이터를 DB 계층에서 최신순으로 정렬하여 가져오도록 `List<StockSignal> findAllByOrderByCreatedAtDesc();` 쿼리 메서드를 추가해줘.
+
+2. StockSignalService.java
+- 기존 `getAllSignals()` 메서드는 `repository.findAll()` 호출 후 Java Stream을 이용해 메모리에서 정렬하고 있어 성능 저하 우려가 있음.
+- 이를 방금 추가한 `repository.findAllByOrderByCreatedAtDesc()`를 호출하도록 로직을 깔끔하게 리팩토링해줘.
+
+3. DashboardController.java
+- `/dashboard` GET 매핑 메서드 내부에서 `signalService.getAllSignals()`를 호출해 가져온 리스트를 Model에 "signals"라는 키로 담는 로직이 완벽하게 연결되도록 작성해줘.
+- View에 필요한 통계용 변수(totalCount, buyCount, sellCount) 계산 로직도 함께 유지해줘.
+
+4. dashboard.html (Thymeleaf View)
+- 컨트롤러에서 전달받은 `signals` 리스트를 `<tr th:each="signal : ${signals}">` 형태로 테이블 데이터에 맵핑하는 코드를 검증해줘.
+- 만약 리스트가 비어있을 경우 데이터가 없다는 안내 메시지(`<div class="empty-state">`)가 노출되도록 `th:if="${#lists.isEmpty(signals)}"` 처리가 올바르게 동작하도록 보장해줘.
+
+# 제약 조건
+- 대용량 데이터 조회를 대비해 반드시 DB 쿼리 레벨(ORDER BY)에서 정렬이 수행되게 할 것.
+- 기존에 작성된 `row-buy`, `row-sell` 등 UI 전용 클래스나 레이아웃이 훼손되지 않도록 Thymeleaf 데이터 바인딩 구조만 견고하게 다듬을 것.
+  ```
+
+- 결과/메모: REQ-F-004 신호 이력 전체 조회 기능을 구현 및 최적화했습니다.
+
+대시보드 진입 시 전체 매매 신호를 최신순으로 조회하도록 StockSignalRepository에 findAllByOrderByCreatedAtDesc()를 추가했습니다.
+StockSignalService.getAllSignals()는 이제 메모리 정렬 대신 DB 정렬 결과를 그대로 사용하도록 변경했습니다.
+DashboardController에서 조회한 signals를 Model에 바인딩하고, totalCount, buyCount, sellCount 통계도 함께 전달하도록 연결했습니다.
+dashboard.html은 전달된 signals 리스트를 테이블에 정상 바인딩하며, 데이터가 없을 때는 empty-state 메시지가 노출됩니다.
+검증도 완료했습니다.
+
+서비스 및 컨트롤러 테스트 12개 통과
+
+- 모드: agent
+- 지시사항:
+  ```
+ @workspace
+StockSignal-Web 프로젝트의 [REQ-F-005] 종목별 필터링 검색 기능을 구현해줘.
+사용자가 대시보드 검색창에 종목명을 입력하면 해당 키워드가 포함된 이력만 조회되도록 백엔드 로직을 연결해야 해.
+
+# 핵심 요구사항
+1. StockSignalRepository.java
+- 입력값이 종목명에 "포함(Containing)"되고 "대소문자를 무시(IgnoreCase)"하며 최신순 정렬되도록 쿼리 메서드를 추가해줘.
+- 메서드명: List<StockSignal> findByTickerContainingIgnoreCaseOrderByCreatedAtDesc(String ticker);
+
+2. StockSignalService.java
+- 방금 추가한 Repository 메서드를 호출하는 서비스 로직을 만들어줘.
+- 메서드명: List<StockSignal> searchSignalsByTicker(String keyword);
+
+3. DashboardController.java
+- dashboard() 메서드 시그니처에 `@RequestParam(value = "ticker", required = false) String ticker` 파라미터를 추가해줘.
+- 내부 로직을 분기하여, ticker 값이 null이거나 비어있지 않으면 `signalService.searchSignalsByTicker(ticker)`를 호출해 결과를 가져오고, 그렇지 않으면 기존처럼 `signalService.getAllSignals()`를 호출하도록 수정해줘.
+- 조회된 리스트(`allSignals`)를 기준으로 totalCount, buyCount, sellCount가 동적으로 계산되도록 기존 Stream 로직을 유지해줘.
+
+4. 제약 조건
+- dashboard.html 파일에는 이미 `<input type="search" name="ticker" th:value="${param.ticker}"/>` 형태로 뷰 바인딩이 되어 있으므로 HTML은 수정하지 않아도 동작하게끔 컨트롤러 엔드포인트를 설계할 것.
+- 기존의 `/api/signals/ticker/{ticker}` REST API의 동작(정확한 일치)을 깨뜨리지 않도록, Dashboard 전용 검색 서비스 로직을 분리하거나 확장하는 형태로 작성할 것.
+  ```
+
+- 결과/메모: REQ-F-005 종목별 필터링 검색 기능을 구현했습니다.
+
+StockSignalRepository에 부분 문자열 검색 메서드 findByTickerContainingIgnoreCaseOrderByCreatedAtDesc()를 추가했습니다.
+StockSignalService.searchSignalsByTicker(String keyword)로 대시보드 전용 검색 로직을 분리해 기존 REST API의 정확 일치 조회와 독립적으로 유지했습니다.
+DashboardController에 @RequestParam(value = "ticker", required = false)를 추가해 ticker 파라미터 유무에 따라 전체 조회 또는 검색 조회로 분기하도록 연결했습니다.
+조회된 리스트를 기준으로 totalCount, buyCount, sellCount가 동적으로 계산됩니다.
+검증도 완료했습니다.
 

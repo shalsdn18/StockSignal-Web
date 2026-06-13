@@ -62,6 +62,14 @@ public class StockSignalService {
     }
 
     /**
+     * Searches signals whose ticker contains the given keyword, newest first.
+     */
+    @Transactional(readOnly = true)
+    public List<StockSignal> searchSignalsByTicker(String keyword) {
+        return repository.findByTickerContainingIgnoreCaseOrderByCreatedAtDesc(keyword);
+    }
+
+    /**
      * Returns signals for a specific ticker (newest first).
      */
     @Transactional(readOnly = true)

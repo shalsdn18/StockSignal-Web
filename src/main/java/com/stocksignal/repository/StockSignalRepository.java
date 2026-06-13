@@ -19,6 +19,9 @@ public interface StockSignalRepository extends JpaRepository<StockSignal, Long> 
     /** Find all signals for a given ticker, newest first. */
     List<StockSignal> findByTickerIgnoreCaseOrderByCreatedAtDesc(String ticker);
 
+    /** Find all signals whose ticker contains the keyword, newest first. */
+    List<StockSignal> findByTickerContainingIgnoreCaseOrderByCreatedAtDesc(String ticker);
+
     /** Find all signals of a given type (BUY / SELL), newest first. */
     List<StockSignal> findBySignalTypeOrderByCreatedAtDesc(SignalType signalType);
 
