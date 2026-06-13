@@ -159,12 +159,15 @@
                         <th>Type</th>
                         <th>Price (USD)</th>
                         <th>Message</th>
+                        <th>Memo</th>
                         <th>Received At</th>
+                        <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="signal : ${signals}"
-                        th:classappend="${signal.signalType.name() == 'BUY'} ? ' row-buy' : ' row-sell'">
+                        th:classappend="${signal.signalType.name() == 'BUY'} ? ' row-buy' : ' row-sell'"
+                        th:attr="data-signal-id=${signal.id}">
                         <td th:text="${signal.id}">1</td>
                         <td class="ticker" th:text="${signal.ticker}">AAPL</td>
                         <td>
@@ -174,7 +177,24 @@
                         </td>
                         <td th:text="${'$' + signal.price}">$0.00</td>
                         <td th:text="${signal.message != null ? signal.message : '-'}">-</td>
+                        <td th:text="${!#lists.isEmpty(signal.memos) ? signal.memos[0].memoContent : '-'}">-</td>
                         <td th:text="${#temporals.format(signal.createdAt, 'yyyy-MM-dd HH:mm:ss')}">-</td>
+                        <td>
+                            <div class="table-actions" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                                <button type="button"
+                                        class="btn-action btn-memo"
+                                        th:onclick="|openMemoModal([[${signal.id}]])|"
+                                        th:attr="data-signal-id=${signal.id}">
+                                    📝 메모
+                                </button>
+                                <button type="button"
+                                        class="btn-action btn-delete"
+                                        th:onclick="|deleteSignal([[${signal.id}]])|"
+                                        th:attr="data-signal-id=${signal.id}">
+                                    🗑️ 삭제
+                                </button>
+                            </div>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
@@ -188,6 +208,62 @@
         </footer>
     </div>
 </div>
+
+<script>
+    function openMemoModal(id) {
+        var memoContent = prompt('이 신호에 대한 투자 전략 메모를 입력하세요:');
+
+        if (memoContent === null) {
+            return;
+        }
+
+        if (memoContent.trim() === '') {
+            return;
+        }
+
+        fetch('/api/signals/' + id + '/memo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain'
+            },
+            body: memoContent
+        })
+            .then(function (response) {
+                if (response.ok) {
+                    window.location.reload();
+                    return;
+                }
+
+                throw new Error('Memo request failed');
+            })
+            .catch(function (error) {
+                console.error(error);
+                alert('메모 저장에 실패했습니다.');
+            });
+    }
+
+    function deleteSignal(id) {
+        if (!confirm('정말 삭제하시겠습니까?')) {
+            return;
+        }
+
+        fetch('/api/signals/' + id, {
+            method: 'DELETE'
+        })
+            .then(function (response) {
+                if (response.ok) {
+                    window.location.reload();
+                    return;
+                }
+
+                throw new Error('Delete request failed');
+            })
+            .catch(function (error) {
+                console.error(error);
+                alert('삭제에 실패했습니다.');
+            });
+    }
+</script>
 
 </body>
 </html>

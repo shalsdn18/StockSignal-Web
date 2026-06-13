@@ -23,7 +23,7 @@ public class TestUiController {
         this.morningBriefingService = morningBriefingService;
     }
 
-    @GetMapping({"/", "/test/dashboard"})
+    @GetMapping("/test/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("signals", createSampleSignals());
         model.addAttribute("totalCount", 142);
@@ -40,7 +40,7 @@ public class TestUiController {
 
     @PostMapping("/test/login-submit")
     public String submitLogin() {
-        return "redirect:/login";
+        return "redirect:/";
     }
 
     @GetMapping({"/register", "/test/register"})
@@ -50,7 +50,7 @@ public class TestUiController {
 
     @PostMapping("/test/register-submit")
     public String submitRegister() {
-        return "redirect:/register";
+        return "redirect:/login";
     }
 
     @GetMapping({"/briefing", "/test/briefing"})
