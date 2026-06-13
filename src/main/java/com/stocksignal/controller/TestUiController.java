@@ -16,7 +16,7 @@ import java.util.List;
 @Controller
 public class TestUiController {
 
-    @GetMapping({"/", "/test/dashboard"})
+    @GetMapping("/test/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("signals", createSampleSignals());
         model.addAttribute("totalCount", 142);

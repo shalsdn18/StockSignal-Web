@@ -28,7 +28,7 @@ public class DashboardController {
      * Renders the service-backed dashboard page at {@code /dashboard}.
      * Supports dynamic filtering by ticker, date range, and signal type (all optional, AND-combined).
      */
-    @GetMapping("/dashboard")
+        @GetMapping({"/", "/dashboard"})
     public String dashboard(
             @RequestParam(value = "ticker", required = false) String ticker,
             @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
