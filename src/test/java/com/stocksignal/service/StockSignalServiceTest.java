@@ -203,4 +203,47 @@ class StockSignalServiceTest {
 
         assertThat(result).hasSize(1);
     }
+
+    @Test
+    void searchSignalsByDynamicFilters_withSignalTypeOnly() {
+        when(repository.findByDynamicFiltersOrderByCreatedAtDesc(
+                null,
+                null,
+                null,
+                SignalType.BUY
+        )).thenReturn(List.of(sampleSignal));
+
+        List<StockSignal> result = service.searchSignalsByDynamicFilters(null, null, null, SignalType.BUY);
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void searchSignalsByDynamicFilters_withAllFilters() {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        when(repository.findByDynamicFiltersOrderByCreatedAtDesc(
+                org.mockito.ArgumentMatchers.eq("AAP"),
+                org.mockito.ArgumentMatchers.argThat(dt -> dt.toLocalDate().equals(today)),
+                org.mockito.ArgumentMatchers.any(java.time.LocalDateTime.class),
+                org.mockito.ArgumentMatchers.eq(SignalType.BUY)
+        )).thenReturn(List.of(sampleSignal));
+
+        List<StockSignal> result = service.searchSignalsByDynamicFilters("AAP", today, today, SignalType.BUY);
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void searchSignalsByDynamicFilters_withNoFilters() {
+        when(repository.findByDynamicFiltersOrderByCreatedAtDesc(
+                null,
+                null,
+                null,
+                null
+        )).thenReturn(List.of(sampleSignal));
+
+        List<StockSignal> result = service.searchSignalsByDynamicFilters(null, null, null, null);
+
+        assertThat(result).hasSize(1);
+    }
 }

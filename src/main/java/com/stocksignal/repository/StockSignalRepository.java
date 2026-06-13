@@ -45,4 +45,18 @@ public interface StockSignalRepository extends JpaRepository<StockSignal, Long> 
             @Param("startDateTime") LocalDateTime startDateTime,
             @Param("endDateTime") LocalDateTime endDateTime
     );
+
+    /** Find signals with optional filters for ticker, date range, and signal type (AND conditions). */
+    @Query("SELECT s FROM StockSignal s WHERE " +
+            "(:keyword IS NULL OR LOWER(s.ticker) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+            "(:startDateTime IS NULL OR s.createdAt >= :startDateTime) AND " +
+            "(:endDateTime IS NULL OR s.createdAt <= :endDateTime) AND " +
+            "(:signalType IS NULL OR s.signalType = :signalType) " +
+            "ORDER BY s.createdAt DESC")
+    List<StockSignal> findByDynamicFiltersOrderByCreatedAtDesc(
+            @Param("keyword") String keyword,
+            @Param("startDateTime") LocalDateTime startDateTime,
+            @Param("endDateTime") LocalDateTime endDateTime,
+            @Param("signalType") SignalType signalType
+    );
 }

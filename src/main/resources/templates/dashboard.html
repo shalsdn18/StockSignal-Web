@@ -102,9 +102,9 @@
                     <label class="filter-field">
                         <span>Signal Type</span>
                         <select name="signalType">
-                            <option value="" th:selected="${param.signalType == null or #lists.isEmpty(param.signalType)}">All</option>
-                            <option value="BUY" th:selected="${param.signalType != null and param.signalType[0] == 'BUY'}">BUY</option>
-                            <option value="SELL" th:selected="${param.signalType != null and param.signalType[0] == 'SELL'}">SELL</option>
+                            <option value="" th:selected="${param.signalType == null or param.signalType == ''}">All</option>
+                            <option value="BUY" th:selected="${param.signalType == 'BUY'}">BUY</option>
+                            <option value="SELL" th:selected="${param.signalType == 'SELL'}">SELL</option>
                         </select>
                     </label>
 

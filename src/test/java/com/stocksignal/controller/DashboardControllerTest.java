@@ -20,11 +20,11 @@ class DashboardControllerTest {
     void dashboard_populatesSignalsAndStats() {
         StockSignal s = new StockSignal("AAPL", SignalType.BUY, 180.0, "test");
         s.setCreatedAt(LocalDateTime.now());
-        when(signalService.getAllSignals()).thenReturn(List.of(s));
+        when(signalService.searchSignalsByDynamicFilters(null, null, null, null)).thenReturn(List.of(s));
 
         Model model = new ConcurrentModel();
 
-        String viewName = controller.dashboard(null, null, null, model);
+        String viewName = controller.dashboard(null, null, null, null, model);
 
         org.assertj.core.api.Assertions.assertThat(viewName).isEqualTo("dashboard");
         org.assertj.core.api.Assertions.assertThat(model.getAttribute("signals")).isEqualTo(List.of(s));
@@ -34,14 +34,14 @@ class DashboardControllerTest {
     }
 
     @Test
-    void dashboard_usesTickerSearchWhenTickerProvided() {
+    void dashboard_usesTickerFilterWhenTickerProvided() {
         StockSignal s = new StockSignal("AAPL", SignalType.BUY, 180.0, "test");
         s.setCreatedAt(LocalDateTime.now());
-        when(signalService.searchSignalsByTicker("AAP")).thenReturn(List.of(s));
+        when(signalService.searchSignalsByDynamicFilters("AAP", null, null, null)).thenReturn(List.of(s));
 
         Model model = new ConcurrentModel();
 
-        String viewName = controller.dashboard("AAP", null, null, model);
+        String viewName = controller.dashboard("AAP", null, null, null, model);
 
         org.assertj.core.api.Assertions.assertThat(viewName).isEqualTo("dashboard");
         org.assertj.core.api.Assertions.assertThat(model.getAttribute("signals")).isEqualTo(List.of(s));
@@ -51,15 +51,15 @@ class DashboardControllerTest {
     }
 
     @Test
-    void dashboard_usesDateRangeSearchWhenDatesProvided() {
+    void dashboard_usesDateRangeFilterWhenDatesProvided() {
         StockSignal s = new StockSignal("MSFT", SignalType.SELL, 320.0, "test");
         s.setCreatedAt(LocalDateTime.now());
         java.time.LocalDate today = java.time.LocalDate.now();
-        when(signalService.searchSignalsByDateRange(today, today)).thenReturn(List.of(s));
+        when(signalService.searchSignalsByDynamicFilters(null, today, today, null)).thenReturn(List.of(s));
 
         Model model = new ConcurrentModel();
 
-        String viewName = controller.dashboard(null, today, today, model);
+        String viewName = controller.dashboard(null, today, today, null, model);
 
         org.assertj.core.api.Assertions.assertThat(viewName).isEqualTo("dashboard");
         org.assertj.core.api.Assertions.assertThat(model.getAttribute("signals")).isEqualTo(List.of(s));
@@ -69,15 +69,32 @@ class DashboardControllerTest {
     }
 
     @Test
-    void dashboard_usesTickerAndDateRangeSearchWhenBothProvided() {
+    void dashboard_usesSignalTypeFilterWhenSignalTypeProvided() {
         StockSignal s = new StockSignal("AAPL", SignalType.BUY, 180.0, "test");
         s.setCreatedAt(LocalDateTime.now());
-        java.time.LocalDate today = java.time.LocalDate.now();
-        when(signalService.searchSignalsByTickerAndDateRange("AAP", today, today)).thenReturn(List.of(s));
+        when(signalService.searchSignalsByDynamicFilters(null, null, null, SignalType.BUY)).thenReturn(List.of(s));
 
         Model model = new ConcurrentModel();
 
-        String viewName = controller.dashboard("AAP", today, today, model);
+        String viewName = controller.dashboard(null, null, null, SignalType.BUY, model);
+
+        org.assertj.core.api.Assertions.assertThat(viewName).isEqualTo("dashboard");
+        org.assertj.core.api.Assertions.assertThat(model.getAttribute("signals")).isEqualTo(List.of(s));
+        org.assertj.core.api.Assertions.assertThat(model.getAttribute("totalCount")).isEqualTo(1);
+        org.assertj.core.api.Assertions.assertThat(model.getAttribute("buyCount")).isEqualTo(1L);
+        org.assertj.core.api.Assertions.assertThat(model.getAttribute("sellCount")).isEqualTo(0L);
+    }
+
+    @Test
+    void dashboard_usesAllFiltersWhenAllProvided() {
+        StockSignal s = new StockSignal("AAPL", SignalType.BUY, 180.0, "test");
+        s.setCreatedAt(LocalDateTime.now());
+        java.time.LocalDate today = java.time.LocalDate.now();
+        when(signalService.searchSignalsByDynamicFilters("AAP", today, today, SignalType.BUY)).thenReturn(List.of(s));
+
+        Model model = new ConcurrentModel();
+
+        String viewName = controller.dashboard("AAP", today, today, SignalType.BUY, model);
 
         org.assertj.core.api.Assertions.assertThat(viewName).isEqualTo("dashboard");
         org.assertj.core.api.Assertions.assertThat(model.getAttribute("signals")).isEqualTo(List.of(s));
@@ -88,11 +105,11 @@ class DashboardControllerTest {
 
     @Test
     void dashboard_handlesEmptySignals() {
-        when(signalService.getAllSignals()).thenReturn(List.of());
+        when(signalService.searchSignalsByDynamicFilters(null, null, null, null)).thenReturn(List.of());
 
         Model model = new ConcurrentModel();
 
-        String viewName = controller.dashboard(null, null, null, model);
+        String viewName = controller.dashboard(null, null, null, null, model);
 
         org.assertj.core.api.Assertions.assertThat(viewName).isEqualTo("dashboard");
         org.assertj.core.api.Assertions.assertThat(model.getAttribute("signals")).isEqualTo(List.of());

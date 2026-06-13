@@ -133,6 +133,40 @@ public class StockSignalService {
     }
 
     /**
+     * Searches signals with dynamic filters (ticker, date range, signal type).
+     * All filters are optional and combined with AND logic at the database level.
+     *
+     * @param ticker ticker keyword filter (null means no filter)
+     * @param startDate date range start (null means no lower bound)
+     * @param endDate date range end (null means no upper bound)
+     * @param signalType signal type filter (null means no filter)
+     * @return filtered signals, newest first
+     */
+    @Transactional(readOnly = true)
+    public List<StockSignal> searchSignalsByDynamicFilters(String ticker, LocalDate startDate, LocalDate endDate, SignalType signalType) {
+        // Normalize dates: swap if endDate < startDate
+        if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
+            LocalDate temp = startDate;
+            startDate = endDate;
+            endDate = temp;
+        }
+
+        LocalDateTime startDateTime = startDate != null
+                ? startDate.atStartOfDay()
+                : null;
+        LocalDateTime endDateTime = endDate != null
+                ? endDate.atTime(LocalTime.MAX)
+                : null;
+
+        return repository.findByDynamicFiltersOrderByCreatedAtDesc(
+                ticker,
+                startDateTime,
+                endDateTime,
+                signalType
+        );
+    }
+
+    /**
      * Returns signals for a specific ticker (newest first).
      */
     @Transactional(readOnly = true)

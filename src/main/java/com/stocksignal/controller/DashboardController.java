@@ -1,5 +1,6 @@
 package com.stocksignal.controller;
 
+import com.stocksignal.entity.SignalType;
 import com.stocksignal.entity.StockSignal;
 import com.stocksignal.service.StockSignalService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -25,29 +26,27 @@ public class DashboardController {
 
     /**
      * Renders the service-backed dashboard page at {@code /dashboard}.
+     * Supports dynamic filtering by ticker, date range, and signal type (all optional, AND-combined).
      */
     @GetMapping("/dashboard")
     public String dashboard(
             @RequestParam(value = "ticker", required = false) String ticker,
             @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(value = "signalType", required = false) SignalType signalType,
             Model model) {
-        List<StockSignal> signals;
+        // Normalize filters
+        String normalizedTicker = (ticker != null && !ticker.isBlank()) ? ticker : null;
 
-        // Determine which search path to take
-        boolean hasTickerFilter = ticker != null && !ticker.isBlank();
-        boolean hasDateFilter = startDate != null || endDate != null;
+        // Unified dynamic search: all filters are optional and combined with AND logic
+        List<StockSignal> signals = signalService.searchSignalsByDynamicFilters(
+                normalizedTicker,
+                startDate,
+                endDate,
+                signalType
+        );
 
-        if (hasTickerFilter && hasDateFilter) {
-            signals = signalService.searchSignalsByTickerAndDateRange(ticker, startDate, endDate);
-        } else if (hasTickerFilter) {
-            signals = signalService.searchSignalsByTicker(ticker);
-        } else if (hasDateFilter) {
-            signals = signalService.searchSignalsByDateRange(startDate, endDate);
-        } else {
-            signals = signalService.getAllSignals();
-        }
-
+        // Calculate statistics based on filtered results
         long buyCount = signals.stream()
                 .filter(s -> s.getSignalType().name().equals("BUY"))
                 .count();

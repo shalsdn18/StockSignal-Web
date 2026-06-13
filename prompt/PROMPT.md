@@ -448,3 +448,111 @@ StockSignal-Web 프로젝트의 [REQ-F-006] 기간별 조회 기능을 구현해
 | 역순 교환 | ✅ 완성 | 방어 로직 |
 | 부분 날짜 지원 | ✅ 완성 | Null 안전 처리 |
 | 뷰 통합 | ✅ 완성 | 날짜 입력 필드 추가 |
+
+- 모드: agent
+- 지시사항:
+  ```
+@workspace
+StockSignal-Web 프로젝트의 [REQ-F-007] 신호 종류별 정렬 (BUY/SELL 필터링) 기능을 구현해줘.
+대시보드 상단 필터링 드롭다운 메뉴에서 '매수(BUY)' 또는 '매도(SELL)' 선택 시 해당 조건에 매칭되는 이력만 조회되도록 백엔드를 확장해야 해.
+
+# 핵심 요구사항
+1. StockSignalRepository.java & StockSignalService.java
+- 앞서 [REQ-F-005], [REQ-F-006]에서 구축한 종목(Ticker) 및 기간(Date) 다중 조건 검색 로직(Specification 기반 또는 @Query)에 `SignalType` 조건을 추가로 결합해 줘.
+- 컨트롤러로부터 전달받은 `SignalType signalType`이 null이 아닐 경우, 동적 쿼리의 AND 조건으로 포함되어 DB 레벨에서 정렬 및 필터링되도록 처리해 줘.
+- 단일 필터만 작동하는 것이 아니라 기존 Ticker, Date 필터와 완벽하게 복합(AND) 연동되어야 해.
+
+2. DashboardController.java
+- `dashboard()` GET 매핑 메서드 시그니처에 `@RequestParam(value = "signalType", required = false) SignalType signalType` 파라미터를 추가해 줘.
+- Service 계층의 동적 검색 메서드에 해당 파라미터를 넘겨 `signals` 결과를 갱신해 줘.
+- 검색 결과가 반환될 때, 상단의 요약 카드 통계(totalCount, buyCount, sellCount)는 전체 DB 데이터가 아닌 "현재 필터링된 검색 결과"를 기반으로 동적 계산되어 UI에 반영되도록 기존 Stream 람다 식을 업데이트해 줘.
+
+3. dashboard.html (Thymeleaf View)
+- 파일 내에 이미 작성되어 있는 `<select name="signalType">` 태그 블록을 확인하고, `th:selected="${param.signalType != null and param.signalType[0] == 'BUY'}"` 등의 속성이 백엔드 필터링 동작 후에도 드롭다운 선택 상태를 정확하게 유지하는지 검증해 줘.
+- 필터링 결과가 없을 경우 노출되는 `<div class="empty-state">` 처리 로직이 그대로 정상 작동하도록 뷰 데이터 바인딩을 유지해 줘.
+
+# 제약 조건
+- 클라이언트에서 Form Submit 시 넘어오는 문자열 파라미터("BUY", "SELL")가 Spring의 기본 PropertyEditor를 통해 `com.stocksignal.entity.SignalType` Enum으로 예외 없이 자동 변환(DataBinding)되도록 구조화할 것.
+- 빈 문자열("")이 넘어올 경우 null로 간주하여 전체 검색(필터 해제)으로 동작하도록 설계할 것.
+  ```
+
+- 결과/메모: ## ✅ REQ-F-007: 신호 종류별 필터링 (BUY/SELL) 구현 완료
+
+### 📋 구현 사항
+
+**Repository 계층 (StockSignalRepository.java)**
+- `findByDynamicFiltersOrderByCreatedAtDesc()`: 
+  - 4개 선택적 파라미터로 포괄적 필터링 (Ticker, StartDateTime, EndDateTime, SignalType)
+  - JPQL `IS NULL` 체크를 통해 각 필터가 null이면 자동 무시 (AND 조건)
+  - DB 레벨에서 모든 필터 조합 최적화
+
+**Service 계층 (StockSignalService.java)**
+- `searchSignalsByDynamicFilters(String ticker, LocalDate startDate, LocalDate endDate, SignalType signalType)`:
+  - 모든 필터를 선택적으로 받고 DB에 위임
+  - LocalDate → LocalDateTime 변환 (시작: 00:00:00, 종료: 23:59:59)
+  - 역순 날짜 방어로직 유지 (endDate < startDate 시 자동 스왑)
+
+**Controller 계층 (DashboardController.java)**
+- `@RequestParam(value = "signalType", required = false) SignalType signalType` 추가
+- Spring의 기본 PropertyEditor가 "BUY"/"SELL" 문자열 → `SignalType` Enum 자동 변환
+- 빈 문자열("") 또는 null은 필터 무시로 처리
+- 필터된 검색 결과 기반 통계 계산 (buyCount, sellCount는 현재 필터 조건 반영)
+
+**View 계층 (dashboard.html)**
+- 기존 Signal Type select 요소 유지
+- Thymeleaf 바인딩 개선: `th:selected="${param.signalType == 'BUY'}"` (배열 인덱싱 제거)
+- 필터링 폼 제출 시 선택값 자동 유지
+
+### 🔗 필터 AND 조합 매트릭스
+
+| Ticker | Date | SignalType | 결과 | 설명 |
+|--------|------|-----------|------|------|
+| ✓ | ✓ | ✓ | AND | 모든 조건 만족 |
+| ✓ | ✓ |   | AND | Ticker + Date 검색 (F-006 호환) |
+| ✓ |   | ✓ | AND | Ticker + Type 검색 (신규) |
+| ✓ |   |   | ticker only | Ticker 검색 (F-005 호환) |
+|   | ✓ | ✓ | AND | Date + Type 검색 (신규) |
+|   | ✓ |   | date only | 날짜 범위 검색 (F-006 호환) |
+|   |   | ✓ | type only | 신호 타입만 필터링 (신규) |
+|   |   |   | ALL | 전체 조회 (기본) |
+
+### ✅ 테스트 결과
+- **총 23개 테스트 모두 통과** ✓
+  - **Controller 테스트** (9개):
+    - 기본 조회 (모든 필터 없음)
+    - Ticker만 필터링
+    - Date 범위만 필터링
+    - SignalType만 필터링 (신규)
+    - Ticker + Date 조합
+    - Ticker + SignalType 조합 (신규)
+    - Date + SignalType 조합 (신규)
+    - 모든 필터 조합 (신규)
+    - 빈 결과 처리
+  - **Service 테스트** (14개):
+    - SignalType만 필터링 (신규)
+    - 모든 필터 조합 (신규)
+    - 필터 없음 (신규)
+    - 기존 ticker/date/mixed 테스트 유지
+
+### 🔑 아키텍처 결정 사항
+
+1. **단일 포괄 메서드**: 모든 필터 조합을 개별 메서드로 만드는 대신 `findByDynamicFiltersOrderByCreatedAtDesc()` 하나로 통합
+2. **JPQL 파라미터 방어**: `:keyword IS NULL OR ...` 패턴으로 null 파라미터 자동 필터 무시
+3. **Spring 자동 변환**: PropertyEditor가 Form `name="signalType"` value를 `SignalType` Enum으로 변환
+4. **필터된 통계**: 선택된 필터 조건에만 적용된 signals 리스트 기반 buyCount/sellCount 계산 (전체 DB 통계 아님)
+
+### 📊 기능 상태
+| 기능 | 상태 | 비고 |
+|------|------|------|
+| SignalType 필터링 | ✅ 완성 | BUY/SELL 선택 가능 |
+| Ticker + SignalType | ✅ 완성 | AND 조건 |
+| Date + SignalType | ✅ 완성 | AND 조건 |
+| 모든 필터 조합 | ✅ 완성 | 4중 AND 로직 |
+| 빈 문자열 처리 | ✅ 완성 | "" → null 변환 |
+| 선택값 UI 유지 | ✅ 완성 | Thymeleaf 바인딩 |
+| 필터된 통계 | ✅ 완성 | 현재 검색 기반 |
+
+### 🎯 사용자 경험
+- 대시보드 필터 폼에서 Ticker, Date 범위, Signal Type을 자유롭게 조합하여 검색
+- 각 필터를 선택 또는 해제하면 자동으로 DB에서 AND 조건으로 재조회
+- 통계 카드(BUY/SELL 개수)는 전체가 아닌 **현재 필터 조건 결과**만 반영
