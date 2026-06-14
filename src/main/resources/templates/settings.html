@@ -5,8 +5,105 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>StockSignal — Settings</title>
     <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <style>
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            pointer-events: none;
+        }
+
+        .toast {
+            min-width: 280px;
+            max-width: 360px;
+            padding: 0.95rem 1.1rem;
+            border-radius: 16px;
+            color: #f8fafc;
+            background: rgba(15, 23, 42, 0.94);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 18px 48px rgba(15, 23, 42, 0.28);
+            backdrop-filter: blur(14px);
+            pointer-events: auto;
+            animation: toastSlideIn 0.35s ease-out, toastFadeOut 0.4s ease-in 2.6s forwards;
+        }
+
+        .toast--success {
+            border-color: rgba(34, 197, 94, 0.28);
+            box-shadow: 0 18px 48px rgba(34, 197, 94, 0.18);
+        }
+
+        .toast--error {
+            border-color: rgba(248, 113, 113, 0.28);
+            box-shadow: 0 18px 48px rgba(248, 113, 113, 0.18);
+        }
+
+        .toast__title {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-size: 0.92rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .toast--success .toast__title {
+            color: #4ade80;
+        }
+
+        .toast--error .toast__title {
+            color: #fca5a5;
+        }
+
+        .toast__message {
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.45;
+            color: rgba(226, 232, 240, 0.94);
+        }
+
+        @keyframes toastSlideIn {
+            from {
+                opacity: 0;
+                transform: translate3d(24px, -8px, 0);
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        @keyframes toastFadeOut {
+            from {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+            to {
+                opacity: 0;
+                transform: translate3d(12px, -4px, 0);
+            }
+        }
+    </style>
 </head>
 <body>
+
+<div class="toast-container" aria-live="polite" aria-atomic="true">
+    <div th:if="${successMessage != null and !#strings.isEmpty(successMessage)}"
+         class="toast toast--success"
+         data-toast-auto-hide="true">
+        <span class="toast__title">Success</span>
+        <p class="toast__message" th:text="${successMessage}">Settings saved successfully.</p>
+    </div>
+
+    <div th:if="${errorMessage != null and !#strings.isEmpty(errorMessage)}"
+         class="toast toast--error"
+         data-toast-auto-hide="true">
+        <span class="toast__title">Error</span>
+        <p class="toast__message" th:text="${errorMessage}">An error occurred while updating settings.</p>
+    </div>
+</div>
 
 <div class="dashboard-shell">
     <aside class="sidebar" aria-label="Dashboard navigation">
@@ -55,14 +152,6 @@
             <section id="settings" class="api-box">
                 <h2>Account Settings</h2>
 
-                <div th:if="${successMessage != null and !#strings.isEmpty(successMessage)}" class="auth-alert auth-alert--success">
-                    <p th:text="${successMessage}">Settings saved successfully.</p>
-                </div>
-
-                <div th:if="${errorMessage != null and !#strings.isEmpty(errorMessage)}" class="auth-alert auth-alert--error">
-                    <p th:text="${errorMessage}">An error occurred while updating settings.</p>
-                </div>
-
                 <form class="settings-form" th:action="@{/test/settings-save}" method="post">
                     <label class="auth-field">
                         <span>Telegram Chat ID</span>
@@ -94,6 +183,18 @@
         </footer>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var toasts = document.querySelectorAll('[data-toast-auto-hide="true"]');
+
+        toasts.forEach(function (toast) {
+            setTimeout(function () {
+                toast.remove();
+            }, 3000);
+        });
+    });
+</script>
 
 </body>
 </html>
