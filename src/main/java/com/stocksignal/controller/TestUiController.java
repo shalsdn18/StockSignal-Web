@@ -1,11 +1,13 @@
 package com.stocksignal.controller;
 
+import com.stocksignal.dto.DashboardStatisticsDto;
 import com.stocksignal.entity.MorningBriefing;
 import com.stocksignal.entity.SignalType;
 import com.stocksignal.entity.StockSignal;
 import com.stocksignal.entity.User;
 import com.stocksignal.repository.UserRepository;
 import com.stocksignal.service.MorningBriefingService;
+import com.stocksignal.service.StockSignalService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,10 +23,14 @@ import java.util.List;
 public class TestUiController {
 
     private final MorningBriefingService morningBriefingService;
+    private final StockSignalService stockSignalService;
     private final UserRepository userRepository;
 
-    public TestUiController(MorningBriefingService morningBriefingService, UserRepository userRepository) {
+    public TestUiController(MorningBriefingService morningBriefingService,
+                            StockSignalService stockSignalService,
+                            UserRepository userRepository) {
         this.morningBriefingService = morningBriefingService;
+        this.stockSignalService = stockSignalService;
         this.userRepository = userRepository;
     }
 
@@ -61,11 +67,10 @@ public class TestUiController {
     @GetMapping({"/briefing", "/test/briefing"})
     public String briefing(Model model) {
         MorningBriefing briefing = morningBriefingService.getLatestBriefing();
+        DashboardStatisticsDto stats = stockSignalService.calculateOverallStatistics();
 
         model.addAttribute("briefing", briefing);
-        model.addAttribute("totalCount", 142);
-        model.addAttribute("buyCount", 98);
-        model.addAttribute("sellCount", 44);
+        model.addAttribute("dashboardStatistics", stats);
 
         return "briefing";
     }

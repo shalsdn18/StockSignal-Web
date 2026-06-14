@@ -26,16 +26,16 @@
 
         <div class="sidebar-stats">
             <div>
-                <span>Status</span>
-                <strong>Briefing</strong>
+                <span>Total</span>
+                <strong th:text="${dashboardStatistics.totalCount}">0</strong>
             </div>
             <div>
-                <span>Mode</span>
-                <strong>AI</strong>
+                <span>BUY</span>
+                <strong th:text="${dashboardStatistics.buyCount}">0</strong>
             </div>
             <div>
-                <span>Focus</span>
-                <strong>Market</strong>
+                <span>SELL</span>
+                <strong th:text="${dashboardStatistics.sellCount}">0</strong>
             </div>
         </div>
 

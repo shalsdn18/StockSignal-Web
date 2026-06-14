@@ -1,9 +1,11 @@
 package com.stocksignal.controller;
 
+import com.stocksignal.dto.DashboardStatisticsDto;
 import com.stocksignal.entity.MorningBriefing;
 import com.stocksignal.entity.User;
 import com.stocksignal.repository.UserRepository;
 import com.stocksignal.service.MorningBriefingService;
+import com.stocksignal.service.StockSignalService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.View;
@@ -28,26 +30,28 @@ class TestUiControllerTest {
 
     private MockMvc mockMvc;
     private MorningBriefingService morningBriefingService;
+        private StockSignalService stockSignalService;
         private UserRepository userRepository;
         private User sampleUser;
 
     @BeforeEach
     void setUp() {
         morningBriefingService = mock(MorningBriefingService.class);
-                userRepository = mock(UserRepository.class);
-                sampleUser = new User(
-                                "shalsdn18",
-                                "encryptedPassword",
-                                "shalsdn18@hannam.ac.kr",
-                                "778899123",
-                                "123456789:ABCdefGhIJKlmNoPQ_TestToken"
-                );
-                given(userRepository.findByUsername("shalsdn18")).willReturn(Optional.of(sampleUser));
-                given(userRepository.save(sampleUser)).willReturn(sampleUser);
+        stockSignalService = mock(StockSignalService.class);
+        userRepository = mock(UserRepository.class);
+        sampleUser = new User(
+                "shalsdn18",
+                "encryptedPassword",
+                "shalsdn18@hannam.ac.kr",
+                "778899123",
+                "123456789:ABCdefGhIJKlmNoPQ_TestToken"
+        );
+        given(userRepository.findByUsername("shalsdn18")).willReturn(Optional.of(sampleUser));
+        given(userRepository.save(sampleUser)).willReturn(sampleUser);
 
-                mockMvc = MockMvcBuilders.standaloneSetup(new TestUiController(morningBriefingService, userRepository))
-                                .setSingleView(new NoOpView())
-                                .build();
+        mockMvc = MockMvcBuilders.standaloneSetup(new TestUiController(morningBriefingService, stockSignalService, userRepository))
+                .setSingleView(new NoOpView())
+                .build();
     }
 
     @Test
@@ -57,7 +61,12 @@ class TestUiControllerTest {
                 "<p>나스닥 <b>1.2% 상승</b></p>",
                 "안정세"
         );
+        DashboardStatisticsDto stats = new DashboardStatisticsDto();
+        stats.setTotalCount(142);
+        stats.setBuyCount(98);
+        stats.setSellCount(44);
         given(morningBriefingService.getLatestBriefing()).willReturn(sampleBriefing);
+        given(stockSignalService.calculateOverallStatistics()).willReturn(stats);
 
         mockMvc.perform(get("/test/dashboard"))
                 .andExpect(status().isOk())
@@ -66,7 +75,8 @@ class TestUiControllerTest {
         mockMvc.perform(get("/briefing"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("briefing"))
-                .andExpect(model().attribute("briefing", sampleBriefing));
+                .andExpect(model().attribute("briefing", sampleBriefing))
+                .andExpect(model().attribute("dashboardStatistics", stats));
 
         mockMvc.perform(get("/settings"))
                 .andExpect(status().isOk())
@@ -83,7 +93,7 @@ class TestUiControllerTest {
 
     @Test
     void postTestUiEndpoints_redirectBackToScreens() throws Exception {
-                TestUiController controller = new TestUiController(morningBriefingService, userRepository);
+                TestUiController controller = new TestUiController(morningBriefingService, stockSignalService, userRepository);
 
         assertEquals("redirect:/", controller.submitLogin());
         assertEquals("redirect:/login", controller.submitRegister());
