@@ -52,6 +52,21 @@
         </header>
 
         <main class="container dashboard-main">
+            <section class="api-box" aria-labelledby="monitoring-title">
+                <div class="filter-box__header">
+                    <h2 id="monitoring-title">System Monitoring</h2>
+                    <p>
+                        🟢 시스템 관제: 데이터 수집 엔진 가동 중
+                        <span th:if="${lastSignalReceivedAt != null}">
+                            | 최근 신호 웹훅 수신: <span th:text="${#temporals.format(lastSignalReceivedAt, 'yyyy-MM-dd HH:mm:ss')}">-</span>
+                        </span>
+                        <span th:if="${lastSignalReceivedAt == null}">
+                            | 최근 신호 웹훅 수신: 신호 수신 이력 없음 (대기 중)
+                        </span>
+                    </p>
+                </div>
+            </section>
+
             <!-- ── Summary cards ── -->
             <section id="summary" class="summary-cards" aria-labelledby="summary-title">
                 <h2 id="summary-title" class="section-title">Signal Overview</h2>

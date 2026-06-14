@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -49,9 +50,11 @@ public class DashboardController {
 
         // REQ-F-012: dashboard statistics across the entire archived dataset
         DashboardStatisticsDto stats = signalService.calculateOverallStatistics();
+        LocalDateTime lastSignalReceivedAt = signalService.getLastSignalReceivedAt();
 
         model.addAttribute("signals", signals);
         model.addAttribute("dashboardStatistics", stats);
+        model.addAttribute("lastSignalReceivedAt", lastSignalReceivedAt);
         model.addAttribute("statistics", stats);
 
         return "dashboard";

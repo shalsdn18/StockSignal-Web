@@ -27,10 +27,12 @@ class DashboardControllerTest {
         s.setCreatedAt(LocalDateTime.now());
         SignalStatistics signalStats = new SignalStatistics(0, 0, 0, 0.0, 1, 0.0);
         List<StockSignal> allSignals = List.of(s);
+        LocalDateTime lastSignalReceivedAt = LocalDateTime.now();
 
         when(signalService.searchSignalsByDynamicFilters(null, null, null, null)).thenReturn(allSignals);
         when(signalService.calculateOverallStatistics()).thenReturn(
                 new DashboardStatisticsDto(1L, 1L, 0L, signalStats));
+        when(signalService.getLastSignalReceivedAt()).thenReturn(lastSignalReceivedAt);
 
         Model model = new ConcurrentModel();
 
@@ -38,6 +40,7 @@ class DashboardControllerTest {
 
         assertThat(viewName).isEqualTo("dashboard");
         assertThat(model.getAttribute("signals")).isEqualTo(allSignals);
+        assertThat(model.getAttribute("lastSignalReceivedAt")).isEqualTo(lastSignalReceivedAt);
 
         DashboardStatisticsDto dto = (DashboardStatisticsDto) model.getAttribute("dashboardStatistics");
         assertThat(dto).isNotNull();
@@ -58,10 +61,12 @@ class DashboardControllerTest {
         s.setCreatedAt(LocalDateTime.now());
         SignalStatistics signalStats = new SignalStatistics(1, 1, 0, 100.0, 0, 10.0);
         List<StockSignal> allSignals = List.of(s);
+        LocalDateTime lastSignalReceivedAt = LocalDateTime.now();
 
         when(signalService.searchSignalsByDynamicFilters("AAP", null, null, null)).thenReturn(allSignals);
         when(signalService.calculateOverallStatistics()).thenReturn(
                 new DashboardStatisticsDto(1L, 1L, 0L, signalStats));
+        when(signalService.getLastSignalReceivedAt()).thenReturn(lastSignalReceivedAt);
 
         Model model = new ConcurrentModel();
 
@@ -85,10 +90,12 @@ class DashboardControllerTest {
         java.time.LocalDate today = java.time.LocalDate.now();
         SignalStatistics signalStats = new SignalStatistics(0, 0, 0, 0.0, 0, 0.0);
         List<StockSignal> allSignals = List.of(s);
+        LocalDateTime lastSignalReceivedAt = LocalDateTime.now();
 
         when(signalService.searchSignalsByDynamicFilters(null, today, today, null)).thenReturn(allSignals);
         when(signalService.calculateOverallStatistics()).thenReturn(
                 new DashboardStatisticsDto(1L, 0L, 1L, signalStats));
+        when(signalService.getLastSignalReceivedAt()).thenReturn(lastSignalReceivedAt);
 
         Model model = new ConcurrentModel();
 
@@ -109,10 +116,12 @@ class DashboardControllerTest {
         s.setCreatedAt(LocalDateTime.now());
         SignalStatistics signalStats = new SignalStatistics(0, 0, 0, 0.0, 1, 0.0);
         List<StockSignal> allSignals = List.of(s);
+        LocalDateTime lastSignalReceivedAt = LocalDateTime.now();
 
         when(signalService.searchSignalsByDynamicFilters(null, null, null, SignalType.BUY)).thenReturn(allSignals);
         when(signalService.calculateOverallStatistics()).thenReturn(
                 new DashboardStatisticsDto(1L, 1L, 0L, signalStats));
+        when(signalService.getLastSignalReceivedAt()).thenReturn(lastSignalReceivedAt);
 
         Model model = new ConcurrentModel();
 
@@ -134,10 +143,12 @@ class DashboardControllerTest {
         java.time.LocalDate today = java.time.LocalDate.now();
         SignalStatistics signalStats = new SignalStatistics(0, 0, 0, 0.0, 1, 0.0);
         List<StockSignal> allSignals = List.of(s);
+        LocalDateTime lastSignalReceivedAt = LocalDateTime.now();
 
         when(signalService.searchSignalsByDynamicFilters("AAP", today, today, SignalType.BUY)).thenReturn(allSignals);
         when(signalService.calculateOverallStatistics()).thenReturn(
                 new DashboardStatisticsDto(1L, 1L, 0L, signalStats));
+        when(signalService.getLastSignalReceivedAt()).thenReturn(lastSignalReceivedAt);
 
         Model model = new ConcurrentModel();
 
@@ -155,10 +166,12 @@ class DashboardControllerTest {
     @Test
     void dashboard_handlesEmptySignals() {
         SignalStatistics signalStats = new SignalStatistics(0, 0, 0, 0.0, 0, 0.0);
+        LocalDateTime lastSignalReceivedAt = LocalDateTime.now();
 
         when(signalService.searchSignalsByDynamicFilters(null, null, null, null)).thenReturn(List.of());
         when(signalService.calculateOverallStatistics()).thenReturn(
                 new DashboardStatisticsDto(0L, 0L, 0L, signalStats));
+        when(signalService.getLastSignalReceivedAt()).thenReturn(lastSignalReceivedAt);
 
         Model model = new ConcurrentModel();
 
@@ -167,6 +180,7 @@ class DashboardControllerTest {
         assertThat(viewName).isEqualTo("dashboard");
         DashboardStatisticsDto dto = (DashboardStatisticsDto) model.getAttribute("dashboardStatistics");
         assertThat(dto).isNotNull();
+        assertThat(model.getAttribute("lastSignalReceivedAt")).isEqualTo(lastSignalReceivedAt);
         assertThat(dto.getTotalCount()).isEqualTo(0L);
         assertThat(dto.getBuyCount()).isEqualTo(0L);
         assertThat(dto.getSellCount()).isEqualTo(0L);

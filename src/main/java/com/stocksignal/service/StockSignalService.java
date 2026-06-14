@@ -35,6 +35,7 @@ public class StockSignalService {
     private final TelegramNotificationService telegramService;
     private final SignalMemoRepository signalMemoRepository;
     private final SignalStatisticsService signalStatisticsService;
+    private LocalDateTime lastSignalReceivedAt;
 
     public StockSignalService(StockSignalRepository repository,
                               UserRepository userRepository,
@@ -61,6 +62,7 @@ public class StockSignalService {
                 request.getPrice(),
                 request.getMessage()
         );
+        lastSignalReceivedAt = LocalDateTime.now();
         StockSignal saved = repository.save(signal);
         telegramService.sendMessage(buildNotificationText(saved));
 
@@ -244,6 +246,10 @@ public class StockSignalService {
                 sellCount,
                 signalStatistics
         );
+    }
+
+    public LocalDateTime getLastSignalReceivedAt() {
+        return lastSignalReceivedAt;
     }
 
     private String buildNotificationText(StockSignal signal) {
