@@ -10,6 +10,11 @@ import com.stocksignal.entity.User;
 import com.stocksignal.repository.SignalMemoRepository;
 import com.stocksignal.repository.StockSignalRepository;
 import com.stocksignal.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +40,7 @@ public class StockSignalService {
     private final TelegramNotificationService telegramService;
     private final SignalMemoRepository signalMemoRepository;
     private final SignalStatisticsService signalStatisticsService;
+    private static final Logger log = LoggerFactory.getLogger(StockSignalService.class);
     private LocalDateTime lastSignalReceivedAt;
 
     public StockSignalService(StockSignalRepository repository,
@@ -55,6 +61,8 @@ public class StockSignalService {
      * @param request validated request DTO
      * @return the saved {@link StockSignal}
      */
+    @Transactional(rollbackFor = Exception.class)
+    @Retryable(retryFor = {Exception.class}, maxAttempts = 3, backoff = @Backoff(delay = 2000))
     public StockSignal createSignal(StockSignalRequest request) {
         StockSignal signal = new StockSignal(
                 request.getTicker().toUpperCase(),
@@ -276,5 +284,19 @@ public class StockSignalService {
                 null
         );
         return userRepository.save(user);
+    }
+
+    @Recover
+    public StockSignal recover(Exception ex, StockSignalRequest request) {
+        log.error("🚨 [FATAL] [REQ-NF-001] 3회 재시도 모두 실패. 데드 레터(Dead Letter) 생성 완료. 원천 데이터 보존용 로그: {}", request);
+
+        StockSignal fallback = new StockSignal(
+                request.getTicker().toUpperCase(),
+                request.getSignalType(),
+                request.getPrice(),
+                request.getMessage()
+        );
+        fallback.setId(-1L);
+        return fallback;
     }
 }

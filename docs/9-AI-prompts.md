@@ -871,3 +871,40 @@ SignalStatisticsService 알고리즘은 데이터를 반드시 과거 발생 순
    - [시간] 영역에는 백엔드에서 넘겨받은 lastSignalReceivedAt 데이터를 타임리프 포맷 연산자(${#temporals.format(lastSignalReceivedAt, 'yyyy-MM-dd HH:mm:ss')})를 사용해 동적으로 출력해줘.
    - 만약 서버가 방금 켜져서 수신 이력이 아직 없다면(null일 때) 하이픈('-') 대신 "신호 수신 이력 없음 (대기 중)"이라는 텍스트가 안전하게 나오도록 th:if 또는 3항 연산자로 예외 처리 분기를 쳐줘.
 ```
+
+### 날짜: 2026-06-15
+
+- 목적/상황: [REQ-NF-001] 데이터 무결성 보장 구현
+- 사용한 프롬프트:
+  ```
+# 1. COMPILER RULE & ATOMIC LOCK (최상단 배치로 규칙 망각 방지)
+- [중요] 너는 단계별(줄별) 처리를 절대 금지하고, 이 프롬프트의 모든 요구사항을 단 한 번의 세션 내에서 일괄 수정/반영(One-shot Atomic Batch Write)해야 한다.
+- 계획 수립(Plan Mode) 단계를 완전히 생략(Skip)하고 즉시 파일 수정 플로우로 직행해라.
+- 파일별 승인 팝업을 최소화하고, 단 한 장의 'Approve for this session' 팝업 내에서 아래의 A, B, C 공정을 멈춤 없이 완결해라.
+
+# 2. TARGET REPOSITORY CONTEXT
+@pom.xml @StockSignalApplication.java @StockSignalService.java
+
+# 3. ATOMIC INTERFACE SPECIFICATION
+
+A. 의존성 주입: pom.xml 수정
+- <dependencies> 블록 내부에 다음 두 가지 라이브러리를 누락 없이 주입해라:
+  1) spring-retry
+  2) spring-boot-starter-aop
+
+B. 인프라 활성화: src/main/java/com/stocksignal/StockSignalApplication.java
+- 클래스 최상단 레이어에 @EnableRetry 어노테이션을 추가하여 재시도 메커니즘을 글로벌 콘텍스트에 마운트해라.
+- 관련 임포트(org.springframework.retry.annotation.EnableRetry)를 자동 추가해라.
+
+C. 코어 로직 및 Fallback 구현: src/main/java/com/stocksignal/service/StockSignalService.java
+- 다음 임포트 패키지를 클래스 상단에 누락 없이 명시해라:
+  org.springframework.retry.annotation.Retryable, org.springframework.retry.annotation.Recover, org.springframework.retry.annotation.Backoff, org.springframework.transaction.annotation.Transactional
+- createSignal(StockSignalRequest request) 메서드에 아래의 트랜잭션 및 재시도 정책을 결합해라:
+  1) @Transactional(rollbackFor = Exception.class) 주입으로 완벽한 DB 롤백 보장.
+  2) @Retryable(retryFor = {Exception.class}, maxAttempts = 3, backoff = @Backoff(delay = 2000)) 선언으로 일시적 타임아웃 예외 발생 시 2초 대기 후 최대 3회 재시도 작동.
+- Fail-Safe 가드 구동을 위한 @Recover 메서드를 아래 규격으로 하단에 추가해라:
+  1) 메서드 서명: public StockSignal recover(Exception ex, StockSignalRequest request)
+  2) 반환 타입은 원본 메서드와 동일한 StockSignal 구조 매칭.
+  3) 내부 로직: log.error("🚨 [FATAL] [REQ-NF-001] 3회 재시도 모두 실패. 데드 레터(Dead Letter) 생성 완료. 원천 데이터 보존용 로그: {}", request) 실행.
+  4) 시스템 다운을 막기 위해 임시 식별자(예: -1L 등 Fallback 규격)를 가진 더미 StockSignal 객체를 안전하게 빌드하여 반환할 것.
+  ```
