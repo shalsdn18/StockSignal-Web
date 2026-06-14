@@ -1,15 +1,20 @@
 package com.stocksignal.controller;
 
 import com.stocksignal.entity.MorningBriefing;
+import com.stocksignal.entity.User;
+import com.stocksignal.repository.UserRepository;
 import com.stocksignal.service.MorningBriefingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.View;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.util.Optional;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -23,13 +28,26 @@ class TestUiControllerTest {
 
     private MockMvc mockMvc;
     private MorningBriefingService morningBriefingService;
+        private UserRepository userRepository;
+        private User sampleUser;
 
     @BeforeEach
     void setUp() {
         morningBriefingService = mock(MorningBriefingService.class);
-        mockMvc = MockMvcBuilders.standaloneSetup(new TestUiController(morningBriefingService))
-                        .setSingleView(new NoOpView())
-                        .build();
+                userRepository = mock(UserRepository.class);
+                sampleUser = new User(
+                                "shalsdn18",
+                                "encryptedPassword",
+                                "shalsdn18@hannam.ac.kr",
+                                "778899123",
+                                "123456789:ABCdefGhIJKlmNoPQ_TestToken"
+                );
+                given(userRepository.findByUsername("shalsdn18")).willReturn(Optional.of(sampleUser));
+                given(userRepository.save(sampleUser)).willReturn(sampleUser);
+
+                mockMvc = MockMvcBuilders.standaloneSetup(new TestUiController(morningBriefingService, userRepository))
+                                .setSingleView(new NoOpView())
+                                .build();
     }
 
     @Test
@@ -65,11 +83,16 @@ class TestUiControllerTest {
 
     @Test
     void postTestUiEndpoints_redirectBackToScreens() throws Exception {
-        TestUiController controller = new TestUiController(morningBriefingService);
+                TestUiController controller = new TestUiController(morningBriefingService, userRepository);
 
         assertEquals("redirect:/", controller.submitLogin());
         assertEquals("redirect:/login", controller.submitRegister());
-        assertEquals("redirect:/settings", controller.submitSettings());
+
+                RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
+                assertEquals("redirect:/settings", controller.submitSettings("new-chat-id", "new-bot-token", redirectAttributes));
+                assertEquals("설정이 안전하게 저장되었습니다.", redirectAttributes.getFlashAttributes().get("successMessage"));
+                assertEquals("new-chat-id", sampleUser.getTelegramChatId());
+                assertEquals("new-bot-token", sampleUser.getTelegramBotToken());
     }
 
         private static final class NoOpView implements View {

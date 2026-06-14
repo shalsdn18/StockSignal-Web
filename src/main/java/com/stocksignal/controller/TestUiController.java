@@ -4,11 +4,14 @@ import com.stocksignal.entity.MorningBriefing;
 import com.stocksignal.entity.SignalType;
 import com.stocksignal.entity.StockSignal;
 import com.stocksignal.entity.User;
+import com.stocksignal.repository.UserRepository;
 import com.stocksignal.service.MorningBriefingService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,9 +21,11 @@ import java.util.List;
 public class TestUiController {
 
     private final MorningBriefingService morningBriefingService;
+    private final UserRepository userRepository;
 
-    public TestUiController(MorningBriefingService morningBriefingService) {
+    public TestUiController(MorningBriefingService morningBriefingService, UserRepository userRepository) {
         this.morningBriefingService = morningBriefingService;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/test/dashboard")
@@ -67,13 +72,14 @@ public class TestUiController {
 
     @GetMapping({"/settings", "/test/settings"})
     public String settings(Model model) {
-        User user = new User(
+        User user = userRepository.findByUsername("shalsdn18")
+            .orElseGet(() -> userRepository.save(new User(
                 "shalsdn18",
                 "encryptedPassword",
                 "shalsdn18@hannam.ac.kr",
                 "778899123",
                 "123456789:ABCdefGhIJKlmNoPQ_TestToken"
-        );
+            )));
 
         model.addAttribute("user", user);
         model.addAttribute("totalCount", 142);
@@ -83,8 +89,27 @@ public class TestUiController {
         return "settings";
     }
 
-    @PostMapping("/test/settings-save")
-    public String submitSettings() {
+        @PostMapping("/test/settings-save")
+        public String submitSettings(
+            @RequestParam("telegramChatId") String chatId,
+            @RequestParam("telegramBotToken") String botToken,
+            RedirectAttributes redirectAttributes
+        ) {
+        User user = userRepository.findByUsername("shalsdn18")
+            .orElseGet(() -> userRepository.save(new User(
+                "shalsdn18",
+                "encryptedPassword",
+                "shalsdn18@hannam.ac.kr",
+                "778899123",
+                "123456789:ABCdefGhIJKlmNoPQ_TestToken"
+            )));
+
+        user.setTelegramChatId(chatId);
+        user.setTelegramBotToken(botToken);
+        userRepository.save(user);
+
+        redirectAttributes.addFlashAttribute("successMessage", "설정이 안전하게 저장되었습니다.");
+
         return "redirect:/settings";
     }
 
