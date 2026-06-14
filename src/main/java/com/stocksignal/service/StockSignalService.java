@@ -1,6 +1,7 @@
 package com.stocksignal.service;
 
 import com.stocksignal.dto.DashboardStatisticsDto;
+import com.stocksignal.dto.SignalStatistics;
 import com.stocksignal.dto.StockSignalRequest;
 import com.stocksignal.entity.SignalMemo;
 import com.stocksignal.entity.SignalType;
@@ -30,20 +31,20 @@ public class StockSignalService {
     private static final String DEFAULT_MEMO_EMAIL = "memo-user@stocksignal.local";
 
     private final StockSignalRepository repository;
-    private final SignalMemoRepository signalMemoRepository;
     private final UserRepository userRepository;
     private final TelegramNotificationService telegramService;
+    private final SignalMemoRepository signalMemoRepository;
     private final SignalStatisticsService signalStatisticsService;
 
     public StockSignalService(StockSignalRepository repository,
-                              SignalMemoRepository signalMemoRepository,
                               UserRepository userRepository,
                               TelegramNotificationService telegramService,
+                              SignalMemoRepository signalMemoRepository,
                               SignalStatisticsService signalStatisticsService) {
         this.repository = repository;
-        this.signalMemoRepository = signalMemoRepository;
         this.userRepository = userRepository;
         this.telegramService = telegramService;
+        this.signalMemoRepository = signalMemoRepository;
         this.signalStatisticsService = signalStatisticsService;
     }
 
@@ -126,32 +127,26 @@ public class StockSignalService {
      */
     @Transactional(readOnly = true)
     public List<StockSignal> searchSignalsByDateRange(LocalDate startDate, LocalDate endDate) {
-        // Normalize dates: swap if endDate < startDate
         if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
             LocalDate temp = startDate;
             startDate = endDate;
             endDate = temp;
         }
 
-        LocalDateTime startDateTime = startDate != null
-                ? startDate.atStartOfDay()
-                : null;
-        LocalDateTime endDateTime = endDate != null
-                ? endDate.atTime(LocalTime.MAX)
-                : null;
+        LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
+        LocalDateTime endDateTime = endDate != null ? endDate.atTime(LocalTime.MAX) : null;
 
         if (startDateTime != null && endDateTime != null) {
             return repository.findByDateRangeOrderByCreatedAtDesc(startDateTime, endDateTime);
-        } else if (startDateTime != null) {
-            // Only start date provided: from start date to now
-            return repository.findByDateRangeOrderByCreatedAtDesc(startDateTime, LocalDateTime.now());
-        } else if (endDateTime != null) {
-            // Only end date provided: from epoch to end date
-            return repository.findByDateRangeOrderByCreatedAtDesc(LocalDateTime.MIN, endDateTime);
-        } else {
-            // No dates provided: return all signals
-            return getAllSignals();
         }
+        if (startDateTime != null) {
+            return repository.findByDateRangeOrderByCreatedAtDesc(startDateTime, LocalDateTime.now());
+        }
+        if (endDateTime != null) {
+            return repository.findByDateRangeOrderByCreatedAtDesc(LocalDateTime.MIN, endDateTime);
+        }
+
+        return getAllSignals();
     }
 
     /**
@@ -159,19 +154,14 @@ public class StockSignalService {
      */
     @Transactional(readOnly = true)
     public List<StockSignal> searchSignalsByTickerAndDateRange(String keyword, LocalDate startDate, LocalDate endDate) {
-        // Normalize dates: swap if endDate < startDate
         if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
             LocalDate temp = startDate;
             startDate = endDate;
             endDate = temp;
         }
 
-        LocalDateTime startDateTime = startDate != null
-                ? startDate.atStartOfDay()
-                : LocalDateTime.MIN;
-        LocalDateTime endDateTime = endDate != null
-                ? endDate.atTime(LocalTime.MAX)
-                : LocalDateTime.now();
+        LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : LocalDateTime.MIN;
+        LocalDateTime endDateTime = endDate != null ? endDate.atTime(LocalTime.MAX) : LocalDateTime.now();
 
         return repository.findByTickerContainingAndDateRangeOrderByCreatedAtDesc(keyword, startDateTime, endDateTime);
     }
@@ -188,19 +178,14 @@ public class StockSignalService {
      */
     @Transactional(readOnly = true)
     public List<StockSignal> searchSignalsByDynamicFilters(String ticker, LocalDate startDate, LocalDate endDate, SignalType signalType) {
-        // Normalize dates: swap if endDate < startDate
         if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
             LocalDate temp = startDate;
             startDate = endDate;
             endDate = temp;
         }
 
-        LocalDateTime startDateTime = startDate != null
-                ? startDate.atStartOfDay()
-                : null;
-        LocalDateTime endDateTime = endDate != null
-                ? endDate.atTime(LocalTime.MAX)
-                : null;
+        LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
+        LocalDateTime endDateTime = endDate != null ? endDate.atTime(LocalTime.MAX) : null;
 
         return repository.findByDynamicFiltersOrderByCreatedAtDesc(
                 ticker,
@@ -243,22 +228,23 @@ public class StockSignalService {
     public DashboardStatisticsDto calculateOverallStatistics() {
         List<StockSignal> allSignals = repository.findAllByOrderByCreatedAtAsc();
 
+        long totalCount = allSignals.size();
         long buyCount = allSignals.stream()
-                .filter(s -> s.getSignalType() == SignalType.BUY)
+                .filter(signal -> signal.getSignalType() == SignalType.BUY)
                 .count();
         long sellCount = allSignals.stream()
-                .filter(s -> s.getSignalType() == SignalType.SELL)
+                .filter(signal -> signal.getSignalType() == SignalType.SELL)
                 .count();
 
+        SignalStatistics signalStatistics = signalStatisticsService.calculate(allSignals);
+
         return new DashboardStatisticsDto(
-                allSignals.size(),
+                totalCount,
                 buyCount,
                 sellCount,
-                signalStatisticsService.calculate(allSignals)
+                signalStatistics
         );
     }
-
-    // ---- helpers ----
 
     private String buildNotificationText(StockSignal signal) {
         String message = signal.getMessage();
