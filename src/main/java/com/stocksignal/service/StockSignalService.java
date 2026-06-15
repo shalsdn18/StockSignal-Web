@@ -10,8 +10,7 @@ import com.stocksignal.entity.User;
 import com.stocksignal.repository.SignalMemoRepository;
 import com.stocksignal.repository.StockSignalRepository;
 import com.stocksignal.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
@@ -27,6 +26,7 @@ import java.util.Optional;
 /**
  * Business-logic service for stock signals.
  */
+@Slf4j
 @Service
 @Transactional
 public class StockSignalService {
@@ -40,7 +40,6 @@ public class StockSignalService {
     private final TelegramNotificationService telegramService;
     private final SignalMemoRepository signalMemoRepository;
     private final SignalStatisticsService signalStatisticsService;
-    private static final Logger log = LoggerFactory.getLogger(StockSignalService.class);
     private LocalDateTime lastSignalReceivedAt;
 
     public StockSignalService(StockSignalRepository repository,
@@ -64,17 +63,43 @@ public class StockSignalService {
     @Transactional(rollbackFor = Exception.class)
     @Retryable(retryFor = {Exception.class}, maxAttempts = 3, backoff = @Backoff(delay = 2000))
     public StockSignal createSignal(StockSignalRequest request) {
-        StockSignal signal = new StockSignal(
-                request.getTicker().toUpperCase(),
-                request.getSignalType(),
-                request.getPrice(),
-                request.getMessage()
-        );
-        lastSignalReceivedAt = LocalDateTime.now();
-        StockSignal saved = repository.save(signal);
-        telegramService.sendMessage(buildNotificationText(saved));
+        if (request == null) {
+            IllegalArgumentException ex = new IllegalArgumentException("Signal request must not be null");
+            log.error("🚨 [SIGNAL_CREATE_ERROR] Signal request is null", ex);
+            throw ex;
+        }
+        if (request.getTicker() == null || request.getTicker().isBlank()) {
+            IllegalArgumentException ex = new IllegalArgumentException("Ticker must not be blank");
+            log.error("🚨 [SIGNAL_CREATE_ERROR] Ticker is null or blank. ticker={}", request.getTicker(), ex);
+            throw ex;
+        }
+        if (request.getSignalType() == null) {
+            IllegalArgumentException ex = new IllegalArgumentException("Signal type must not be null");
+            log.error("🚨 [SIGNAL_CREATE_ERROR] Signal type is null", ex);
+            throw ex;
+        }
+        if (request.getPrice() == null || request.getPrice() < 0) {
+            IllegalArgumentException ex = new IllegalArgumentException("Price must not be null or negative");
+            log.error("🚨 [SIGNAL_CREATE_ERROR] Invalid price. price={}", request.getPrice(), ex);
+            throw ex;
+        }
 
-        return saved;
+        try {
+            StockSignal signal = new StockSignal(
+                    request.getTicker().toUpperCase(),
+                    request.getSignalType(),
+                    request.getPrice(),
+                    request.getMessage()
+            );
+            lastSignalReceivedAt = LocalDateTime.now();
+            StockSignal saved = repository.save(signal);
+            telegramService.sendMessage(buildNotificationText(saved));
+
+            return saved;
+        } catch (Exception e) {
+            log.error("🚨 [SIGNAL_CREATE_ERROR] Unexpected error while creating signal for ticker={}", request.getTicker(), e);
+            throw e;
+        }
     }
 
     /**
@@ -288,7 +313,7 @@ public class StockSignalService {
 
     @Recover
     public StockSignal recover(Exception ex, StockSignalRequest request) {
-        log.error("🚨 [FATAL] [REQ-NF-001] 3회 재시도 모두 실패. 데드 레터(Dead Letter) 생성 완료. 원천 데이터 보존용 로그: {}", request);
+        log.error("🚨 [FATAL] [REQ-NF-001] 3회 재시도 모두 실패. 데드 레터(Dead Letter) 생성 완료. 원천 데이터 보존용 로그: request={}", request, ex);
 
         StockSignal fallback = new StockSignal(
                 request.getTicker().toUpperCase(),

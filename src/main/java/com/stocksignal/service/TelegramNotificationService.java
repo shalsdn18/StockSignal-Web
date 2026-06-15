@@ -1,7 +1,6 @@
 package com.stocksignal.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -19,10 +18,9 @@ import java.nio.charset.StandardCharsets;
  * instead of calling the API so the rest of the application continues to work
  * without a configured bot.
  */
+@Slf4j
 @Service
 public class TelegramNotificationService {
-
-    private static final Logger log = LoggerFactory.getLogger(TelegramNotificationService.class);
 
     private static final String TELEGRAM_API_URL =
             "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
@@ -56,7 +54,7 @@ public class TelegramNotificationService {
             restTemplate.getForObject(url, String.class);
             log.info("Telegram notification sent: {}", message);
         } catch (RestClientException e) {
-            log.error("Failed to send Telegram notification", e);
+            log.error("🚨 Telegram API sending failed", e);
         }
     }
 
