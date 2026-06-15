@@ -1,27 +1,20 @@
-name: Java CI
-
+name: Java CI with Maven
 on:
+  push:
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
-
+    branches: [ "main" ]
 jobs:
-  # Ruleset의 'build' 항목과 매칭
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository code
+        uses: actions/checkout@v4
       - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
           java-version: '25'
           distribution: 'temurin'
-          cache: maven
-      - name: Build and Test
-        run: mvn -B package # 이 단계에서 test와 build가 함께 수행됨
-
-  # Ruleset의 'test' 항목과 매칭 (필요 시 분리)
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Tests passed in build job"
+          cache: 'maven'
+      - name: Build and Test with Maven
+        run: mvn clean test -B

@@ -994,3 +994,32 @@ StockSignal-Web 프로젝트의 [REQ-NF-005] 비밀번호 암호화 적용(BCryp
 - Java 17 및 Spring Boot 3.x의 최신 Security 설정 문법(`Lambda DSL` 방식의 filterChain)을 준수할 것.
 
 ---
+
+### 날짜: 2026-06-15
+
+- 목적/상황: [REQ-NF-007] 자동 배포 (CI/CD) 파이프라인 구축
+- 사용한 프롬프트:
+  ```
+@workspace
+StockSignal-Web 프로젝트의 [REQ-NF-007] 자동 배포 (CI/CD) 파이프라인 중 CI(지속적 통합) 환경을 구축해줘.
+`.github/workflows/ci.yml` 파일을 생성(또는 수정)하여 GitHub Actions 워크플로우를 작성해야 해.
+
+# 핵심 요구사항
+1. 트리거(Trigger) 조건
+- `main` 브랜치에 `push` 이벤트가 발생하거나 `pull_request`가 생성/업데이트될 때 즉시 동작하도록 설정해줘.
+
+2. Job 및 실행 환경 구성
+- Job 이름은 `build-and-test`로 지정하고, `runs-on: ubuntu-latest` 환경에서 실행되도록 구성해줘.
+
+3. Step 상세 구현
+- 코드 체크아웃: `actions/checkout@v4` 사용.
+- JDK 25 셋업: `actions/setup-java@v4`를 사용하여 `java-version: '25'`, `distribution: 'temurin'`(또는 호환 가능한 JDK 25 배포판)으로 설정해줘.
+- Maven 캐싱: 빌드 속도 최적화를 위해 setup-java 액션 내부에 `cache: 'maven'` 속성을 추가해줘.
+- 빌드 및 테스트 실행: `mvn clean test -B` (배치 모드) 커맨드를 실행하여 컴파일 및 자동화 테스트가 수행되도록 스텝을 작성해줘.
+
+# 제약 조건
+- 리포지토리 루트에 `pom.xml`이 존재하는 Maven 프로젝트 규격을 정확히 따를 것.
+- YAML 문법(들여쓰기)과 GitHub Actions 표준 스키마를 엄격하게 준수할 것.
+- 빌드 실패 시 PR 병합이 차단될 수 있도록 올바른 Exit Code를 반환하는 구조로 작성할 것.
+
+---
