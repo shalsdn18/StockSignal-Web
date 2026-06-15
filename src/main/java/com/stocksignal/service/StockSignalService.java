@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,18 +41,21 @@ public class StockSignalService {
     private final TelegramNotificationService telegramService;
     private final SignalMemoRepository signalMemoRepository;
     private final SignalStatisticsService signalStatisticsService;
+    private final PasswordEncoder passwordEncoder;
     private LocalDateTime lastSignalReceivedAt;
 
     public StockSignalService(StockSignalRepository repository,
                               UserRepository userRepository,
                               TelegramNotificationService telegramService,
                               SignalMemoRepository signalMemoRepository,
-                              SignalStatisticsService signalStatisticsService) {
+                              SignalStatisticsService signalStatisticsService,
+                              PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.userRepository = userRepository;
         this.telegramService = telegramService;
         this.signalMemoRepository = signalMemoRepository;
         this.signalStatisticsService = signalStatisticsService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -303,7 +307,7 @@ public class StockSignalService {
     private User createDefaultMemoUser() {
         User user = new User(
                 DEFAULT_MEMO_USERNAME,
-                DEFAULT_MEMO_PASSWORD,
+                passwordEncoder.encode(DEFAULT_MEMO_PASSWORD),
                 DEFAULT_MEMO_EMAIL,
                 null,
                 null

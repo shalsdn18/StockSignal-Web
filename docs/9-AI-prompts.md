@@ -962,3 +962,35 @@ StockSignal-Web 프로젝트의 [REQ-NF-003] 시스템 로그 관리 체계를 S
 - 성능 저하를 방지하기 위해 로컬 환경에서는 Console, 운영(Prod) 환경에서는 Console+File로 분기되도록 Spring Profile(`<springProfile>`) 구문을 적용해 줘.
 
 ---
+
+### 날짜: 2026-06-15
+
+- 목적/상황: [REQ-NF-005] 비밀번호 암호화 적용
+- 사용한 프롬프트:
+  ```
+@workspace
+StockSignal-Web 프로젝트의 [REQ-NF-005] 비밀번호 암호화 적용(BCrypt)을 구현해 줘.
+회원 DB 해킹 방지를 위해 DB에 적재되는 모든 유저 비밀번호를 단방향 해시 처리해야 해.
+
+# 핵심 요구사항
+1. pom.xml
+- `spring-boot-starter-security` 의존성을 추가해 줘.
+
+2. SecurityConfig.java (신규)
+- `com.stocksignal.config` 패키지에 클래스를 생성하고 `@Configuration`, `@EnableWebSecurity`를 적용해 줘.
+- `BCryptPasswordEncoder`를 반환하는 `PasswordEncoder` 빈(Bean)을 등록해 줘.
+- 의존성 추가로 인해 기존 API(웹훅 등) 및 대시보드 엔드포인트가 HTTP 401/403 에러로 차단되지 않도록, `SecurityFilterChain`을 구성하여 모든 요청을 임시 허용(`requestMatchers("/**").permitAll()`)하고 CSRF를 비활성화하는 등 초기 호환성 셋업을 작성해 줘.
+
+3. 회원가입/유저 생성 로직
+- 회원가입 처리를 담당하는 서비스(예: UserService, AuthService) 객체에 `PasswordEncoder`를 DI(의존성 주입)해 줘.
+- 평문 비밀번호 엔티티를 DB에 저장(`repository.save()`)하기 직전에 `passwordEncoder.encode()`를 호출하여 해시값으로 치환하는 로직을 작성해 줘.
+- 로그인 로직이 구현되어 있다면 비밀번호 비교 시 `passwordEncoder.matches(rawPassword, encodedPassword)`를 사용하도록 수정해 줘.
+
+4. StockSignalService.java (기존 로직 보완)
+- `createDefaultMemoUser()` 내부에서 `DEFAULT_MEMO_PASSWORD` 상수를 그대로 User 객체에 넣고 있는데, 이곳에도 `PasswordEncoder`를 적용해 해시된 값이 저장되도록 리팩토링해 줘.
+
+# 제약 조건
+- 빈 순환 참조(Circular Dependency) 예외가 발생하지 않도록 설계 구조를 검증할 것.
+- Java 17 및 Spring Boot 3.x의 최신 Security 설정 문법(`Lambda DSL` 방식의 filterChain)을 준수할 것.
+
+---
