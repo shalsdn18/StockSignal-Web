@@ -293,8 +293,9 @@ public class StockSignalService {
         String notificationText = buildNotificationText(saved);
 
         try {
-            User mainUser = userRepository.findByUsername("shalsdn18").orElse(null);
-            if (mainUser != null) {
+            Optional<User> mainUserOpt = userRepository.findByUsername("shalsdn18");
+            if (mainUserOpt.isPresent()) {
+                User mainUser = mainUserOpt.get();
                 String dynamicToken = mainUser.getTelegramBotToken();
                 String dynamicChatId = mainUser.getTelegramChatId();
 

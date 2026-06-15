@@ -11,7 +11,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * REST API controller for stock signals.
@@ -46,12 +48,20 @@ public class StockSignalApiController {
     }
 
     /** Receive a plaintext Telegram webhook payload and persist it as a signal. */
-    @PostMapping(value = "/webhook", consumes = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<StockSignal> receiveWebhook(@RequestBody String rawMessage) {
+    @PostMapping(value = "/webhook", consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> receiveWebhook(@RequestBody String rawMessage) {
         try {
             StockSignalRequest request = telegramSignalParser.parse(rawMessage);
             StockSignal saved = signalService.createSignal(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", saved.getId());
+            response.put("ticker", saved.getTicker());
+            response.put("signalType", saved.getSignalType());
+            response.put("price", saved.getPrice());
+            response.put("message", saved.getMessage());
+            response.put("createdAt", saved.getCreatedAt());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().build();
         }

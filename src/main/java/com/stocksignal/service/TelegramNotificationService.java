@@ -44,7 +44,7 @@ public class TelegramNotificationService {
      * @param message the text to send
      */
     public void sendMessage(String message) {
-        sendMessage(message, null, null);
+        sendWithCredentials(message, botToken, chatId);
     }
 
     /**
@@ -56,17 +56,22 @@ public class TelegramNotificationService {
      * @param dynamicChatId the runtime chat ID, optionally supplied from the database
      */
     public void sendMessage(String message, String dynamicToken, String dynamicChatId) {
-        boolean useDynamicCredentials = dynamicToken != null && !dynamicToken.isBlank()
-                && dynamicChatId != null && !dynamicChatId.isBlank();
+        if (dynamicToken == null || dynamicToken.isBlank()
+                || dynamicChatId == null || dynamicChatId.isBlank()) {
+            sendMessage(message);
+            return;
+        }
 
-        String effectiveToken = useDynamicCredentials ? dynamicToken : botToken;
-        String effectiveChatId = useDynamicCredentials ? dynamicChatId : chatId;
+        sendWithCredentials(message, dynamicToken, dynamicChatId);
+    }
 
+    private void sendWithCredentials(String message, String effectiveToken, String effectiveChatId) {
         if (effectiveToken == null || effectiveToken.isBlank()
                 || effectiveChatId == null || effectiveChatId.isBlank()) {
             log.info("[Telegram - not configured] {}", message);
             return;
         }
+
         try {
             String encodedMessage = URLEncoder.encode(message, StandardCharsets.UTF_8);
             String url = String.format(TELEGRAM_API_URL, effectiveToken, effectiveChatId, encodedMessage);

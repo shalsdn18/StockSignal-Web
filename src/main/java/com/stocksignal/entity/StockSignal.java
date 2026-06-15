@@ -1,5 +1,6 @@
 package com.stocksignal.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -55,11 +56,13 @@ public class StockSignal {
     private LocalDateTime createdAt;
 
     /** Owner user for the signal. */
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
     /** Memo list associated with this signal. Latest memo is kept first for dashboard display. */
+    @JsonIgnore
     @OneToMany(mappedBy = "stockSignal", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OrderBy("updatedAt DESC")
     private List<SignalMemo> memos = new ArrayList<>();
