@@ -97,7 +97,7 @@ public class StockSignalService {
             );
             lastSignalReceivedAt = LocalDateTime.now();
             StockSignal saved = repository.save(signal);
-            telegramService.sendMessage(buildNotificationText(saved));
+            sendTelegramNotification(saved);
 
             return saved;
         } catch (Exception e) {
@@ -287,6 +287,28 @@ public class StockSignalService {
 
     public LocalDateTime getLastSignalReceivedAt() {
         return lastSignalReceivedAt;
+    }
+
+    private void sendTelegramNotification(StockSignal saved) {
+        String notificationText = buildNotificationText(saved);
+
+        try {
+            User mainUser = userRepository.findByUsername("shalsdn18").orElse(null);
+            if (mainUser != null) {
+                String dynamicToken = mainUser.getTelegramBotToken();
+                String dynamicChatId = mainUser.getTelegramChatId();
+
+                if (dynamicToken != null && !dynamicToken.isBlank()
+                        && dynamicChatId != null && !dynamicChatId.isBlank()) {
+                    telegramService.sendMessage(notificationText, dynamicToken, dynamicChatId);
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            log.error("🚨 Telegram dynamic settings lookup failed, falling back to default configuration", e);
+        }
+
+        telegramService.sendMessage(notificationText);
     }
 
     private String buildNotificationText(StockSignal signal) {

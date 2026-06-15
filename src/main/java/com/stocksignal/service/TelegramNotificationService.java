@@ -44,22 +44,36 @@ public class TelegramNotificationService {
      * @param message the text to send
      */
     public void sendMessage(String message) {
-        if (!isConfigured()) {
+        sendMessage(message, null, null);
+    }
+
+    /**
+     * Sends {@code message} using dynamic Telegram credentials when provided.
+     * Falls back to the configured properties if dynamic credentials are blank.
+     *
+     * @param message the text to send
+     * @param dynamicToken the runtime bot token, optionally supplied from the database
+     * @param dynamicChatId the runtime chat ID, optionally supplied from the database
+     */
+    public void sendMessage(String message, String dynamicToken, String dynamicChatId) {
+        boolean useDynamicCredentials = dynamicToken != null && !dynamicToken.isBlank()
+                && dynamicChatId != null && !dynamicChatId.isBlank();
+
+        String effectiveToken = useDynamicCredentials ? dynamicToken : botToken;
+        String effectiveChatId = useDynamicCredentials ? dynamicChatId : chatId;
+
+        if (effectiveToken == null || effectiveToken.isBlank()
+                || effectiveChatId == null || effectiveChatId.isBlank()) {
             log.info("[Telegram - not configured] {}", message);
             return;
         }
         try {
             String encodedMessage = URLEncoder.encode(message, StandardCharsets.UTF_8);
-            String url = String.format(TELEGRAM_API_URL, botToken, chatId, encodedMessage);
+            String url = String.format(TELEGRAM_API_URL, effectiveToken, effectiveChatId, encodedMessage);
             restTemplate.getForObject(url, String.class);
             log.info("Telegram notification sent: {}", message);
         } catch (RestClientException e) {
             log.error("🚨 Telegram API sending failed", e);
         }
-    }
-
-    private boolean isConfigured() {
-        return botToken != null && !botToken.isBlank()
-                && chatId != null && !chatId.isBlank();
     }
 }

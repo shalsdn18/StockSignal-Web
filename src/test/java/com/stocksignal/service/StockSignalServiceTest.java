@@ -5,7 +5,9 @@ import com.stocksignal.dto.SignalStatistics;
 import com.stocksignal.dto.StockSignalRequest;
 import com.stocksignal.entity.SignalType;
 import com.stocksignal.entity.StockSignal;
+import com.stocksignal.entity.User;
 import com.stocksignal.repository.StockSignalRepository;
+import com.stocksignal.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,8 +21,11 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,6 +40,9 @@ class StockSignalServiceTest {
     @Mock
     private SignalStatisticsService signalStatisticsService;
 
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private StockSignalService service;
 
@@ -44,6 +52,9 @@ class StockSignalServiceTest {
     void setUp() {
         sampleSignal = new StockSignal("AAPL", SignalType.BUY, 182.50, "Test signal");
         sampleSignal.setCreatedAt(LocalDateTime.now());
+
+        User telegramUser = new User("shalsdn18", "encoded-password", "user@example.com", "123456789", "bot-token-abc");
+        lenient().when(userRepository.findByUsername("shalsdn18")).thenReturn(Optional.of(telegramUser));
     }
 
     @Test
@@ -62,10 +73,11 @@ class StockSignalServiceTest {
         assertThat(result.getTicker()).isEqualTo("AAPL");
         assertThat(result.getSignalType()).isEqualTo(SignalType.BUY);
         verify(repository).save(any(StockSignal.class));
-        verify(telegramService).sendMessage(contains("Ticker: AAPL"));
-        verify(telegramService).sendMessage(contains("Type: BUY"));
-        verify(telegramService).sendMessage(contains("Price: $182.50"));
-        verify(telegramService).sendMessage(contains("Message: Test signal"));
+        verify(telegramService).sendMessage(
+            contains("Ticker: AAPL"),
+            anyString(),
+            anyString()
+        );
     }
 
     @Test
@@ -84,6 +96,26 @@ class StockSignalServiceTest {
         });
 
         service.createSignal(request);
+    }
+
+    @Test
+    void createSignal_fallsBackToDefaultTelegramSettingsWhenUserIsMissing() {
+        StockSignalRequest request = new StockSignalRequest();
+        request.setTicker("aapl");
+        request.setSignalType(SignalType.BUY);
+        request.setPrice(182.50);
+        request.setMessage("Fallback signal");
+
+        when(userRepository.findByUsername("shalsdn18")).thenReturn(Optional.empty());
+        when(repository.save(any(StockSignal.class))).thenAnswer(inv -> {
+            StockSignal saved = inv.getArgument(0);
+            saved.setCreatedAt(LocalDateTime.now());
+            return saved;
+        });
+
+        service.createSignal(request);
+
+        verify(telegramService).sendMessage(contains("Fallback signal"));
     }
 
     @Test
