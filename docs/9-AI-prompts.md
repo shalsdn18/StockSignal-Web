@@ -908,3 +908,29 @@ C. 코어 로직 및 Fallback 구현: src/main/java/com/stocksignal/service/Stoc
   3) 내부 로직: log.error("🚨 [FATAL] [REQ-NF-001] 3회 재시도 모두 실패. 데드 레터(Dead Letter) 생성 완료. 원천 데이터 보존용 로그: {}", request) 실행.
   4) 시스템 다운을 막기 위해 임시 식별자(예: -1L 등 Fallback 규격)를 가진 더미 StockSignal 객체를 안전하게 빌드하여 반환할 것.
   ```
+
+### 날짜: 2026-06-15
+
+- 목적/상황: [REQ-NF-002] API 응답 속도 최적화
+- 사용한 프롬프트:
+  ```
+  @workspace
+StockSignal-Web 프로젝트의 [REQ-NF-002] API 응답 속도 최적화 (N+1 문제 해결 및 인덱싱) 작업을 수행해줘.
+대시보드 리스트 조회 시 연관된 엔티티(User, SignalMemo)를 가져오면서 발생하는 N+1 쿼리를 방지하고, 검색 속도를 1초 미만으로 단축하기 위한 쿼리 튜닝이 필요해.
+
+# 핵심 요구사항
+1. StockSignal.java (인덱스 추가)
+- 클래스 상단 `@Table(name = "stock_signal")` 어노테이션에 `indexes` 속성을 추가해 줘.
+- 대시보드 정렬 및 검색의 핵심 조건인 `createdAt` (내림차순)과 `ticker` 컬럼에 대해 단일/복합 인덱스를 명시적으로 설정해 줘. 
+- 예: `@Index(name = "idx_stock_signal_created_at", columnList = "createdAt DESC")`
+
+2. StockSignalRepository.java (Fetch Join 및 N+1 방지)
+- `findAllByOrderByCreatedAtDesc()`, `findByDynamicFiltersOrderByCreatedAtDesc()` 등 대시보드 목록을 가져오는 주요 쿼리 메서드에 연관된 `user`와 `memos`를 한 번에 가져오도록 최적화해 줘.
+- 스프링 데이터 JPA의 `@EntityGraph(attributePaths = {"user", "memos"})` 어노테이션을 메서드 위에 추가하거나, 기존 `@Query` 문자열 내에 `LEFT JOIN FETCH s.user LEFT JOIN FETCH s.memos`를 명시적으로 작성해 줘.
+- 데이터 뻥튀기(Cartesian Product)를 방지하기 위해 JPQL 사용 시 `DISTINCT` 키워드를 포함해 줘. (예: `SELECT DISTINCT s FROM StockSignal s ...`)
+
+3. 제약 조건
+- Hibernate가 페이징 처리(Pagination)와 Collection Fetch Join을 함께 사용할 때 발생하는 메모리 페이징 경고(WARN)가 발생하지 않도록 쿼리 구조를 검증해 줘 (현재는 List 반환이라 괜찮지만 구조적 안정성을 고려할 것).
+- 지연 로딩(`FetchType.LAZY`) 설계 자체는 훼손하지 않고, 리포지토리의 특정 조회 쿼리에서만 한정적으로 Fetch Join이 동작하도록 격리할 것.
+
+---

@@ -14,7 +14,13 @@ import java.time.LocalDateTime;
  * JPA entity representing a stock buy/sell signal.
  */
 @Entity
-@Table(name = "stock_signal")
+@Table(
+    name = "stock_signal",
+    indexes = {
+        @Index(name = "idx_stock_signal_created_at", columnList = "created_at DESC"),
+        @Index(name = "idx_stock_signal_ticker_created_at", columnList = "ticker, created_at DESC")
+    }
+)
 public class StockSignal {
 
     @Id

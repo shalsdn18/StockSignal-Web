@@ -2,6 +2,7 @@ package com.stocksignal.repository;
 
 import com.stocksignal.entity.SignalType;
 import com.stocksignal.entity.StockSignal;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,6 +18,7 @@ import java.util.List;
 public interface StockSignalRepository extends JpaRepository<StockSignal, Long> {
 
     /** Find all signals ordered by creation time, newest first. */
+    @EntityGraph(attributePaths = {"user", "memos"})
     List<StockSignal> findAllByOrderByCreatedAtDesc();
 
     /** Find all signals ordered by creation time, oldest first. */
@@ -32,6 +34,7 @@ public interface StockSignalRepository extends JpaRepository<StockSignal, Long> 
     List<StockSignal> findBySignalTypeOrderByCreatedAtDesc(SignalType signalType);
 
     /** Find the most recent N signals across all tickers. */
+    @EntityGraph(attributePaths = {"user", "memos"})
     List<StockSignal> findTop10ByOrderByCreatedAtDesc();
 
     /** Find signals within a date range, newest first. */
@@ -50,8 +53,10 @@ public interface StockSignalRepository extends JpaRepository<StockSignal, Long> 
     );
 
     /** Find signals with optional filters for ticker, date range, and signal type (AND conditions). */
-    @Query("SELECT s FROM StockSignal s WHERE " +
-            "(:keyword IS NULL OR LOWER(s.ticker) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+    @Query("SELECT DISTINCT s FROM StockSignal s " +
+            "LEFT JOIN FETCH s.user " +
+            "LEFT JOIN FETCH s.memos " +
+            "WHERE (:keyword IS NULL OR LOWER(s.ticker) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
             "(:startDateTime IS NULL OR s.createdAt >= :startDateTime) AND " +
             "(:endDateTime IS NULL OR s.createdAt <= :endDateTime) AND " +
             "(:signalType IS NULL OR s.signalType = :signalType) " +
