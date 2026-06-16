@@ -333,14 +333,12 @@
                             <div class="table-actions" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
                                 <button type="button"
                                         class="btn-action btn-memo"
-                                        th:onclick="|openMemoModal([[${signal.id}]])|"
-                                        th:attr="data-signal-id=${signal.id}">
+                                        th:onclick="|openMemoModal([[${signal.id}]])|">
                                     📝 메모
                                 </button>
                                 <button type="button"
                                         class="btn-action btn-delete"
-                                        th:onclick="|deleteSignal([[${signal.id}]])|"
-                                        th:attr="data-signal-id=${signal.id}">
+                                        th:onclick="|deleteSignal([[${signal.id}]])|">
                                     🗑️ 삭제
                                 </button>
                             </div>
@@ -349,6 +347,25 @@
                     </tbody>
                 </table>
             </section>
+
+            <section id="toss-holdings-section" class="signal-history" style="margin-top: 2.5rem;">
+                <h2>📊 토스증권 Open API 실시간 보유 주식 현황</h2>
+                <table class="signal-table">
+                    <thead>
+                    <tr style="background: #1f2937;">
+                        <th>종목코드</th><th>종목명</th><th>보유수량</th><th>매수평단</th><th>현재가</th><th>평가손익</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tossHoldingsBody">
+                    <tr>
+                        <td colspan="6" class="text-center text-muted" style="padding: 2rem; background: #fff;">
+                            설정 페이지에서 토스 API 키를 입력하면 실시간 자산이 동기화됩니다.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+
         </main>
 
         <footer class="site-footer">
@@ -359,153 +376,82 @@
     </div>
 </div>
 
-<script>
-    function showLoadingOverlay() {
-        var overlay = document.getElementById('loadingOverlay');
-        if (overlay) {
-            overlay.style.display = 'flex';
-        }
-    }
-
-    function hideLoadingOverlay() {
-        var overlay = document.getElementById('loadingOverlay');
-        if (overlay) {
-            overlay.style.display = 'none';
-        }
-    }
-
+<script th:inline="javascript">
+    function showLoadingOverlay() { var overlay = document.getElementById('loadingOverlay'); if (overlay) overlay.style.display = 'flex'; }
+    function hideLoadingOverlay() { var overlay = document.getElementById('loadingOverlay'); if (overlay) overlay.style.display = 'none'; }
     function showToast(message, type) {
         var container = document.getElementById('toast-container');
         var toast = document.createElement('div');
-
         toast.className = 'toast ' + (type === 'error' ? 'toast--error' : 'toast--success');
-        toast.innerHTML = ''
-            + '<span class="toast__title">' + (type === 'error' ? 'Error' : 'Success') + '</span>'
-            + '<p class="toast__message"></p>';
+        toast.innerHTML = '<span class="toast__title">' + (type === 'error' ? 'Error' : 'Success') + '</span><p class="toast__message"></p>';
         toast.querySelector('.toast__message').textContent = message;
-
         container.appendChild(toast);
-
-        setTimeout(function () {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 3000);
+        setTimeout(function () { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 3000);
     }
-
     function openMemoModal(id) {
         var memoContent = prompt('이 신호에 대한 투자 전략 메모를 입력하세요:');
-
-        if (memoContent === null) {
-            return;
-        }
-
-        if (memoContent.trim() === '') {
-            return;
-        }
-
+        if (!memoContent || !memoContent.trim()) return;
         showLoadingOverlay();
-
-        fetch('/api/signals/' + id + '/memo', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain'
-            },
-            body: memoContent
-        })
+        fetch('/api/signals/' + id + '/memo', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: memoContent })
             .then(function (response) {
-                if (response.ok) {
-                    showToast('메모가 성공적으로 저장되었습니다.', 'success');
-                    setTimeout(function () {
-                        window.location.reload();
-                    }, 1200);
-                    return;
-                }
-
-                hideLoadingOverlay();
-                throw new Error('Memo request failed');
+                if (response.ok) { showToast('메모가 저장되었습니다.', 'success'); setTimeout(function () { window.location.reload(); }, 1200); }
+                else { hideLoadingOverlay(); throw new Error('Memo failed'); }
             })
-            .catch(function (error) {
-                console.error(error);
-                hideLoadingOverlay();
-                showToast('메모 저장에 실패했습니다.', 'error');
-            });
+            .catch(function (error) { hideLoadingOverlay(); showToast('메모 저장 실패', 'error'); });
     }
-
     function deleteSignal(id) {
-        if (!confirm('정말 삭제하시겠습니까?')) {
-            return;
-        }
-
+        if (!confirm('정말 삭제하시겠습니까?')) return;
         showLoadingOverlay();
-
-        fetch('/api/signals/' + id, {
-            method: 'DELETE'
-        })
+        fetch('/api/signals/' + id, { method: 'DELETE' })
             .then(function (response) {
-                if (response.ok) {
-                    showToast('신호가 성공적으로 삭제되었습니다.', 'success');
-                    setTimeout(function () {
-                        window.location.reload();
-                    }, 1200);
-                    return;
-                }
-
-                hideLoadingOverlay();
-                throw new Error('Delete request failed');
+                if (response.ok) { showToast('신호가 삭제되었습니다.', 'success'); setTimeout(function () { window.location.reload(); }, 1200); }
+                else { hideLoadingOverlay(); throw new Error('Delete failed'); }
             })
-            .catch(function (error) {
-                console.error(error);
-                hideLoadingOverlay();
-                showToast('삭제에 실패했습니다.', 'error');
-            });
+            .catch(function (error) { hideLoadingOverlay(); showToast('삭제 실패', 'error'); });
     }
-</script>
-
-<div class="container-fluid mt-5 mb-5">
-<div class="card shadow">
-<div class="card-header py-3 bg-gradient-dark text-white">
-<h5 class="m-0 font-weight-bold">📊 토스증권 Open API 실시간 보유 주식 현황</h5>
-</div>
-<div class="card-body">
-<div class="table-responsive">
-<table class="table table-bordered" width="100%" cellspacing="0">
-<thead class="thead-light">
-<tr>
-<th>종목코드</th><th>종목명</th><th>보유수량</th><th>매수평단</th><th>현재가</th><th>평가손익</th>
-</tr>
-</thead>
-<tbody id="tossHoldingsBody">
-<tr><td colspan="6" class="text-center text-muted">설정 페이지에서 토스 API 키를 입력하면 실시간 자산이 연동됩니다.</td></tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</div>
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-fetch('/api/portfolio/holdings')
-.then(response => response.json())
-.then(data => {
-const tbody = document.getElementById('tossHoldingsBody');
-if(!data || data.length === 0) return;
-tbody.innerHTML = '';
-data.forEach(h => {
-const profit = parseFloat(h.valuationProfit || 0);
-const pColor = profit > 0 ? 'text-danger' : (profit < 0 ? 'text-primary' : 'text-dark');
-const row = `<tr>
-<td><strong>${h.symbol}</strong></td>
-<td>${h.stockName || '-'}</td>
-<td class="text-right">${parseFloat(h.quantity).toLocaleString()}</td>
-<td class="text-right">${parseFloat(h.averagePrice).toLocaleString()} ₩</td>
-<td class="text-right">${parseFloat(h.currentPrice).toLocaleString()} ₩</td>
-<td class="text-right ${pColor}"><strong>${profit.toLocaleString()} ₩</strong></td>
-</tr>`;
-tbody.insertAdjacentHTML('beforeend', row);
-});
-}).catch(err => console.error('Toss sync skip or error:', err));
-});
+    // [동적 Fallback 주소 교차 검증 파이프라인] 엔드포인트 오차를 완전 복구하는 스크립트 엔진
+    document.addEventListener("DOMContentLoaded", function() {
+        const endpoints = ['/api/assets/holdings', '/api/portfolio/holdings'];
+        function fetchTossHoldings(apiIndex) {
+            if (apiIndex >= endpoints.length) {
+                console.error("🚨 모든 토스 프록시 API 엔드포인트 무효 판정.");
+                return;
+            }
+            fetch(endpoints[apiIndex])
+                .then(function(res) {
+                    if (!res.ok) throw new Error("HTTP " + res.status);
+                    return res.json();
+                })
+                .then(function(data) {
+                    const tbody = document.getElementById('tossHoldingsBody');
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted" style="padding: 2rem; background: #fff;">보유 중인 주식 자산 내역이 없습니다.</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = '';
+                    data.forEach(function(h) {
+                        const profit = parseFloat(h.valuationProfit || 0);
+                        // 국장 가독성 표준 색상 분기 (매수/매도 배제하고 양수 빨간색, 음수 파란색 하드 바인딩)
+                        const pColor = profit > 0 ? '#dc2626' : (profit < 0 ? '#2563eb' : '#333333');
+                        const pSign = profit > 0 ? '+' : '';
+                        const row = '<tr style="border-bottom: 1px solid #e0e0e0; background: #fff;">' +
+                            '<td class="ticker"><strong>' + h.symbol + '</strong></td>' +
+                            '<td>' + (h.stockName || '-') + '</td>' +
+                            '<td class="text-right">' + parseFloat(h.quantity || 0).toLocaleString() + '</td>' +
+                            '<td class="text-right">₩' + parseFloat(h.averagePrice || 0).toLocaleString() + '</td>' +
+                            '<td class="text-right">₩' + parseFloat(h.currentPrice || 0).toLocaleString() + '</td>' +
+                            '<td class="text-right" style="color: ' + pColor + '; font-weight: bold;">' + pSign + profit.toLocaleString() + ' ₩</td>' +
+                            '</tr>';
+                        tbody.insertAdjacentHTML('beforeend', row);
+                    });
+                })
+                .catch(function(err) {
+                    console.warn("⚠️ 라우트 무효로 다음 프록시 자동 스위칭: " + endpoints[apiIndex]);
+                    fetchTossHoldings(apiIndex + 1);
+                });
+        }
+        fetchTossHoldings(0);
+    });
 </script>
 
 </body>
