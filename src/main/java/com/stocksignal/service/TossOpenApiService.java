@@ -16,6 +16,7 @@ public class TossOpenApiService {
     private final RestTemplate restTemplate;
     private final TossTokenManager tossTokenManager;
 
+    @SuppressWarnings("unchecked")
     public List<Map<String, Object>> getCurrentHoldings() {
         String token = tossTokenManager.getAccessToken();
         String accountSeq = tossTokenManager.getAutoAccountSeq();
@@ -30,7 +31,13 @@ public class TossOpenApiService {
         try {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), Map.class);
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                return (List<Map<String, Object>>) response.getBody().get("holdings");
+                // 1. 토스 응답 최상위 객체에서 "result" 맵을 먼저 추출
+                Map<String, Object> resultObj = (Map<String, Object>) response.getBody().get("result");
+                
+                // 2. "result" 내부에 진짜 주식 배열인 "items"가 존재하면 파싱하여 리턴
+                if (resultObj != null && resultObj.containsKey("items")) {
+                    return (List<Map<String, Object>>) resultObj.get("items");
+                }
             }
         } catch (Exception e) {
             log.error("🚨 [TossOpenApiService] holdings 수집 실패: {}", e.getMessage());

@@ -430,16 +430,20 @@
                     }
                     tbody.innerHTML = '';
                     data.forEach(function(h) {
-                        const profit = parseFloat(h.valuationProfit || 0);
-                        // 국장 가독성 표준 색상 분기 (매수/매도 배제하고 양수 빨간색, 음수 파란색 하드 바인딩)
+                        // 1. 평가손익 파싱 (중첩 객체 profitLoss 가드 포함)
+                        const profit = parseFloat((h.profitLoss != null) ? h.profitLoss.amount : 0);
+                        
+                        // 국장 가독성 표준 색상 분기
                         const pColor = profit > 0 ? '#dc2626' : (profit < 0 ? '#2563eb' : '#333333');
                         const pSign = profit > 0 ? '+' : '';
+                        
+                        // 2. 토스 공식 스펙 키값으로 정밀 매핑하여 로우 생성
                         const row = '<tr style="border-bottom: 1px solid #e0e0e0; background: #fff;">' +
                             '<td class="ticker"><strong>' + h.symbol + '</strong></td>' +
-                            '<td>' + (h.stockName || '-') + '</td>' +
+                            '<td>' + (h.name || '-') + '</td>' + // 🎯 stockName -> name 변경
                             '<td class="text-right">' + parseFloat(h.quantity || 0).toLocaleString() + '</td>' +
-                            '<td class="text-right">₩' + parseFloat(h.averagePrice || 0).toLocaleString() + '</td>' +
-                            '<td class="text-right">₩' + parseFloat(h.currentPrice || 0).toLocaleString() + '</td>' +
+                            '<td class="text-right">₩' + parseFloat(h.averagePurchasePrice || 0).toLocaleString() + '</td>' + // 🎯 averagePrice -> averagePurchasePrice 변경
+                            '<td class="text-right">₩' + parseFloat(h.lastPrice || 0).toLocaleString() + '</td>' + // 🎯 currentPrice -> lastPrice 변경
                             '<td class="text-right" style="color: ' + pColor + '; font-weight: bold;">' + pSign + profit.toLocaleString() + ' ₩</td>' +
                             '</tr>';
                         tbody.insertAdjacentHTML('beforeend', row);
