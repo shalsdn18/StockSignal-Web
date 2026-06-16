@@ -6,6 +6,7 @@ import com.stocksignal.entity.StockSignal;
 import com.stocksignal.service.StockSignalService;
 import com.stocksignal.util.TelegramSignalParser;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +20,14 @@ import java.util.Map;
  * REST API controller for stock signals.
  *
  * <ul>
- *   <li>POST  /api/signals          – create a new signal</li>
- *   <li>GET   /api/signals          – list all signals</li>
- *   <li>GET   /api/signals/{id}     – get signal by ID</li>
- *   <li>GET   /api/signals/ticker/{ticker} – filter by ticker</li>
- *   <li>GET   /api/signals/type/{type}     – filter by BUY / SELL</li>
+ * <li>POST  /api/signals          – create a new signal</li>
+ * <li>GET   /api/signals          – list all signals</li>
+ * <li>GET   /api/signals/{id}     – get signal by ID</li>
+ * <li>GET   /api/signals/ticker/{ticker} – filter by ticker</li>
+ * <li>GET   /api/signals/type/{type}     – filter by BUY / SELL</li>
  * </ul>
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/signals")
 public class StockSignalApiController {
@@ -53,13 +55,15 @@ public class StockSignalApiController {
         try {
             StockSignalRequest request = telegramSignalParser.parse(rawMessage);
             StockSignal saved = signalService.createSignal(request);
+            
+            // 안전한 맵 구조 반환 구조 유지
             Map<String, Object> response = new HashMap<>();
             response.put("id", saved.getId());
             response.put("ticker", saved.getTicker());
-            response.put("signalType", saved.getSignalType());
+            response.put("signalType", saved.getSignalType() != null ? saved.getSignalType().name() : null);
             response.put("price", saved.getPrice());
             response.put("message", saved.getMessage());
-            response.put("createdAt", saved.getCreatedAt());
+            response.put("createdAt", saved.getCreatedAt() != null ? saved.getCreatedAt().toString() : null);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (IllegalArgumentException ex) {

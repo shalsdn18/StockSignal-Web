@@ -11,9 +11,6 @@ import com.stocksignal.repository.SignalMemoRepository;
 import com.stocksignal.repository.StockSignalRepository;
 import com.stocksignal.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,7 +62,6 @@ public class StockSignalService {
      * @return the saved {@link StockSignal}
      */
     @Transactional(rollbackFor = Exception.class)
-    @Retryable(retryFor = {Exception.class}, maxAttempts = 3, backoff = @Backoff(delay = 2000))
     public StockSignal createSignal(StockSignalRequest request) {
         if (request == null) {
             IllegalArgumentException ex = new IllegalArgumentException("Signal request must not be null");
@@ -324,7 +320,7 @@ public class StockSignalService {
                 signal.getSignalType(),
                 signal.getPrice(),
                 message
-        );
+            );
     }
 
     private User createDefaultMemoUser() {
@@ -336,19 +332,5 @@ public class StockSignalService {
                 null
         );
         return userRepository.save(user);
-    }
-
-    @Recover
-    public StockSignal recover(Exception ex, StockSignalRequest request) {
-        log.error("🚨 [FATAL] [REQ-NF-001] 3회 재시도 모두 실패. 데드 레터(Dead Letter) 생성 완료. 원천 데이터 보존용 로그: request={}", request, ex);
-
-        StockSignal fallback = new StockSignal(
-                request.getTicker().toUpperCase(),
-                request.getSignalType(),
-                request.getPrice(),
-                request.getMessage()
-        );
-        fallback.setId(-1L);
-        return fallback;
     }
 }

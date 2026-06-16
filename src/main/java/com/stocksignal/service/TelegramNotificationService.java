@@ -6,9 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
 /**
  * Service for sending notifications via the Telegram Bot API.
  *
@@ -21,9 +18,6 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 @Service
 public class TelegramNotificationService {
-
-    private static final String TELEGRAM_API_URL =
-            "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
 
     private final RestTemplate restTemplate;
 
@@ -73,9 +67,11 @@ public class TelegramNotificationService {
         }
 
         try {
-            String encodedMessage = URLEncoder.encode(message, StandardCharsets.UTF_8);
-            String url = String.format(TELEGRAM_API_URL, effectiveToken, effectiveChatId, encodedMessage);
-            restTemplate.getForObject(url, String.class);
+            // 중복 인코딩(Double Encoding) 방지를 위해 RestTemplate 가이드라인 가변 인자 구조 적용
+            String url = "https://api.telegram.org/bot{token}/sendMessage?chat_id={chatId}&text={text}";
+            
+            // RestTemplate이 각 중괄호 위치에 값을 순서대로 안전하게 자동 인코딩 매핑해 줍니다.
+            restTemplate.getForObject(url, String.class, effectiveToken, effectiveChatId, message);
             log.info("Telegram notification sent: {}", message);
         } catch (RestClientException e) {
             log.error("🚨 Telegram API sending failed", e);
