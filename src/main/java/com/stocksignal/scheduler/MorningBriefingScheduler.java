@@ -37,31 +37,29 @@ public class MorningBriefingScheduler {
     }
 
     /**
-     * 🤖 [시연용 오토 세이빙 아키텍처 추가]
+     * 🤖 [시연용 오토 세이빙 아키텍처 고도화]
      * 서버 구동 완료 직후 즉시 런타임에 실행되는 라이프사이클 메서드입니다.
-     * 오늘자 모닝 브리핑 데이터가 데이터베이스에 비어있다면, 데모용 리포트를 즉석에서 자동 적재합니다.
+     * 파일 데이터베이스의 기존 적재 상태와 무관하게, 시연용 데모 리포트를 최상단에 강제 주입합니다.
      */
     @PostConstruct
     public void initDemoBriefing() {
         try {
             LocalDate today = LocalDate.now();
-            boolean alreadyExists = morningBriefingService.findBriefingForDate(today).isPresent();
             
-            if (!alreadyExists) {
-                log.info("🤖 [시연 가이드] 오늘자 브리핑이 비어있어 데모용 리포트를 즉시 생성 보전합니다.");
-                
-                String title = String.format("📈 %s 주요 증시 동향 및 AI 시그널 요약 (데모 발간)", today);
-                String content = buildMarketSummaryHtml(today);
-                String marketStatus = "나스닥 +1.2%, 환율 1,380원 안정세";
+            log.info("🤖 [시연 가이드] 파일 DB 제약을 우회하여 데모용 리포트를 상단에 강제 적재합니다.");
+            
+            String title = String.format("📈 %s 주요 증시 동향 및 AI 시그널 요약 (데모 발간)", today);
+            String content = buildMarketSummaryHtml(today);
+            String marketStatus = "나스닥 +1.2%, 환율 1,380원 안정세";
 
-                MorningBriefing briefing = new MorningBriefing(title, content, marketStatus);
-                briefing.setPublishedAt(LocalDateTime.now());
+            MorningBriefing briefing = new MorningBriefing(title, content, marketStatus);
+            briefing.setPublishedAt(LocalDateTime.now());
 
-                morningBriefingRepository.save(briefing);
-                log.info("🤖 [사전 적재 완결] 시연용 데이터 준비가 성공적으로 끝났습니다.");
-            }
+            morningBriefingRepository.save(briefing);
+            log.info("🤖 [사전 적재 완결] 시연용 텍스트 리포트 자산 준비가 최종 완료되었습니다.");
+            
         } catch (Exception e) {
-            log.error("🚨 시연용 브리핑 데이터 적재 중 치명적 예외 격발", e);
+            log.error("🚨 시연용 브리핑 데이터 강제 적재 중 치명적 예외 격발", e);
         }
     }
 
