@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "StockSignalApplication",
+            "request": "launch",
+            "mainClass": "com.stocksignal.StockSignalApplication",
+            "env": {
+                "TELEGRAM_BOT_TOKEN": "your_real_token_here",
+                "TELEGRAM_BOT_CHAT_ID": "your_real_chat_id_here"
+            }
+        }
+    ]
+}
