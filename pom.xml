@@ -15,7 +15,7 @@
     <groupId>com.stocksignal</groupId>
     <artifactId>stock-signal-web</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
     <name>StockSignal-Web</name>
     <description>Web-based stock buy/sell signal and morning briefing system</description>
 
@@ -50,6 +50,13 @@
     </dependencyManagement>
 
     <dependencies>
+    
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
