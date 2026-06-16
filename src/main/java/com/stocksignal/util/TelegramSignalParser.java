@@ -15,12 +15,12 @@ import java.util.regex.Pattern;
 public class TelegramSignalParser {
 
     private static final Pattern LABELED_PATTERN = Pattern.compile(
-            "종목\\s*[:=]\\s*([A-Z]{1,10})\\s*,?\\s*신호\\s*[:=]\\s*(BUY|SELL)\\s*,?\\s*가격\\s*[:=]\\s*([0-9]+(?:\\.[0-9]+)?)",
+            "종목\\s*[:=]\\s*([A-Z0-9.]{1,12})\\s*,?\\s*신호\\s*[:=]\\s*(BUY|SELL)\\s*,?\\s*가격\\s*[:=]\\s*([0-9]+(?:\\.[0-9]+)?)",
             Pattern.CASE_INSENSITIVE
     );
 
     private static final Pattern BRACKET_PATTERN = Pattern.compile(
-            "\\[(BUY|SELL)\\]\\s*([A-Z]{1,10})\\s+([0-9]+(?:\\.[0-9]+)?)",
+            "\\[(BUY|SELL)\\]\\s*([A-Z0-9.]{1,12})\\s+([0-9]+(?:\\.[0-9]+)?)",
             Pattern.CASE_INSENSITIVE
     );
 
