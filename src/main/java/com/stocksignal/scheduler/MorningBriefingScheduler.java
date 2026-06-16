@@ -4,6 +4,7 @@ import com.stocksignal.entity.MorningBriefing;
 import com.stocksignal.repository.MorningBriefingRepository;
 import com.stocksignal.service.MorningBriefingService;
 import com.stocksignal.service.TelegramNotificationService;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -33,6 +34,35 @@ public class MorningBriefingScheduler {
         this.morningBriefingService = morningBriefingService;
         this.morningBriefingRepository = morningBriefingRepository;
         this.telegramNotificationService = telegramNotificationService;
+    }
+
+    /**
+     * 🤖 [시연용 오토 세이빙 아키텍처 추가]
+     * 서버 구동 완료 직후 즉시 런타임에 실행되는 라이프사이클 메서드입니다.
+     * 오늘자 모닝 브리핑 데이터가 데이터베이스에 비어있다면, 데모용 리포트를 즉석에서 자동 적재합니다.
+     */
+    @PostConstruct
+    public void initDemoBriefing() {
+        try {
+            LocalDate today = LocalDate.now();
+            boolean alreadyExists = morningBriefingService.findBriefingForDate(today).isPresent();
+            
+            if (!alreadyExists) {
+                log.info("🤖 [시연 가이드] 오늘자 브리핑이 비어있어 데모용 리포트를 즉시 생성 보전합니다.");
+                
+                String title = String.format("📈 %s 주요 증시 동향 및 AI 시그널 요약 (데모 발간)", today);
+                String content = buildMarketSummaryHtml(today);
+                String marketStatus = "나스닥 +1.2%, 환율 1,380원 안정세";
+
+                MorningBriefing briefing = new MorningBriefing(title, content, marketStatus);
+                briefing.setPublishedAt(LocalDateTime.now());
+
+                morningBriefingRepository.save(briefing);
+                log.info("🤖 [사전 적재 완결] 시연용 데이터 준비가 성공적으로 끝났습니다.");
+            }
+        } catch (Exception e) {
+            log.error("🚨 시연용 브리핑 데이터 적재 중 치명적 예외 격발", e);
+        }
     }
 
     /**
