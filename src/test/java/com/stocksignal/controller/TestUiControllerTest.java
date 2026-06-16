@@ -78,7 +78,7 @@ class TestUiControllerTest {
                 .andExpect(model().attribute("briefing", sampleBriefing))
                 .andExpect(model().attribute("dashboardStatistics", stats));
 
-        mockMvc.perform(get("/settings"))
+        mockMvc.perform(get("/test/settings"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("settings"));
 
@@ -99,7 +99,7 @@ class TestUiControllerTest {
         assertEquals("redirect:/login", controller.submitRegister());
 
                 RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
-                assertEquals("redirect:/settings", controller.submitSettings("new-chat-id", "new-bot-token", redirectAttributes));
+                assertEquals("redirect:/test/settings", controller.submitSettings("new-chat-id", "new-bot-token", redirectAttributes));
                 assertEquals("설정이 안전하게 저장되었습니다.", redirectAttributes.getFlashAttributes().get("successMessage"));
                 assertEquals("new-chat-id", sampleUser.getTelegramChatId());
                 assertEquals("new-bot-token", sampleUser.getTelegramBotToken());

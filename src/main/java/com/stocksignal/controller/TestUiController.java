@@ -4,6 +4,7 @@ import com.stocksignal.dto.DashboardStatisticsDto;
 import com.stocksignal.entity.MorningBriefing;
 import com.stocksignal.entity.SignalType;
 import com.stocksignal.entity.StockSignal;
+import com.stocksignal.entity.SystemConfig;
 import com.stocksignal.entity.User;
 import com.stocksignal.repository.UserRepository;
 import com.stocksignal.service.MorningBriefingService;
@@ -75,7 +76,7 @@ public class TestUiController {
         return "briefing";
     }
 
-    @GetMapping({"/settings", "/test/settings"})
+    @GetMapping("/test/settings")
     public String settings(Model model) {
         User user = userRepository.findByUsername("shalsdn18")
             .orElseGet(() -> userRepository.save(new User(
@@ -87,6 +88,7 @@ public class TestUiController {
             )));
 
         model.addAttribute("user", user);
+        model.addAttribute("config", new SystemConfig());
         model.addAttribute("totalCount", 142);
         model.addAttribute("buyCount", 98);
         model.addAttribute("sellCount", 44);
@@ -115,7 +117,7 @@ public class TestUiController {
 
         redirectAttributes.addFlashAttribute("successMessage", "설정이 안전하게 저장되었습니다.");
 
-        return "redirect:/settings";
+        return "redirect:/test/settings";
     }
 
     private List<StockSignal> createSampleSignals() {

@@ -1,7 +1,8 @@
 package com.stocksignal.service;
 
+import com.stocksignal.entity.SystemConfig;
+import com.stocksignal.repository.SystemConfigRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -9,26 +10,21 @@ import org.springframework.web.client.RestTemplate;
 /**
  * Service for sending notifications via the Telegram Bot API.
  *
- * <p>Set {@code telegram.bot.token} and {@code telegram.bot.chat-id} in
- * {@code application.properties} (or as environment variables) to enable live
- * delivery.  When either value is left blank the service logs the message
- * instead of calling the API so the rest of the application continues to work
- * without a configured bot.
+ * <p>Reads credentials from {@link com.stocksignal.entity.SystemConfig}. When the bot token or chat ID
+ * is not configured, the service logs the message instead of calling the API so
+ * the rest of the application continues to work without a configured bot.
  */
 @Slf4j
 @Service
 public class TelegramNotificationService {
 
     private final RestTemplate restTemplate;
+    private final SystemConfigRepository configRepository;
 
-    @Value("${telegram.bot.token:}")
-    private String botToken;
-
-    @Value("${telegram.bot.chat-id:}")
-    private String chatId;
-
-    public TelegramNotificationService(RestTemplate restTemplate) {
+    public TelegramNotificationService(RestTemplate restTemplate,
+                                       SystemConfigRepository configRepository) {
         this.restTemplate = restTemplate;
+        this.configRepository = configRepository;
     }
 
     /**
@@ -38,12 +34,16 @@ public class TelegramNotificationService {
      * @param message the text to send
      */
     public void sendMessage(String message) {
-        sendWithCredentials(message, botToken, chatId);
+        SystemConfig config = configRepository.findById(1L).orElseGet(SystemConfig::new);
+        if (config.getTelegramBotToken() == null || config.getTelegramBotToken().isBlank()) {
+            return; // 자격증명 미입력 상태 시 사이런트 인스턴스 바이패스 처리로 예외 소멸
+        }
+        sendWithCredentials(message, config.getTelegramBotToken(), config.getTelegramChatId());
     }
 
     /**
      * Sends {@code message} using dynamic Telegram credentials when provided.
-     * Falls back to the configured properties if dynamic credentials are blank.
+     * Falls back to {@link com.stocksignal.entity.SystemConfig} if dynamic credentials are blank.
      *
      * @param message the text to send
      * @param dynamicToken the runtime bot token, optionally supplied from the database

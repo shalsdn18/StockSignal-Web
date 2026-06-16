@@ -462,5 +462,51 @@
     }
 </script>
 
+<div class="container-fluid mt-5 mb-5">
+<div class="card shadow">
+<div class="card-header py-3 bg-gradient-dark text-white">
+<h5 class="m-0 font-weight-bold">📊 토스증권 Open API 실시간 보유 주식 현황</h5>
+</div>
+<div class="card-body">
+<div class="table-responsive">
+<table class="table table-bordered" width="100%" cellspacing="0">
+<thead class="thead-light">
+<tr>
+<th>종목코드</th><th>종목명</th><th>보유수량</th><th>매수평단</th><th>현재가</th><th>평가손익</th>
+</tr>
+</thead>
+<tbody id="tossHoldingsBody">
+<tr><td colspan="6" class="text-center text-muted">설정 페이지에서 토스 API 키를 입력하면 실시간 자산이 연동됩니다.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+fetch('/api/portfolio/holdings')
+.then(response => response.json())
+.then(data => {
+const tbody = document.getElementById('tossHoldingsBody');
+if(!data || data.length === 0) return;
+tbody.innerHTML = '';
+data.forEach(h => {
+const profit = parseFloat(h.valuationProfit || 0);
+const pColor = profit > 0 ? 'text-danger' : (profit < 0 ? 'text-primary' : 'text-dark');
+const row = `<tr>
+<td><strong>${h.symbol}</strong></td>
+<td>${h.stockName || '-'}</td>
+<td class="text-right">${parseFloat(h.quantity).toLocaleString()}</td>
+<td class="text-right">${parseFloat(h.averagePrice).toLocaleString()} ₩</td>
+<td class="text-right">${parseFloat(h.currentPrice).toLocaleString()} ₩</td>
+<td class="text-right ${pColor}"><strong>${profit.toLocaleString()} ₩</strong></td>
+</tr>`;
+tbody.insertAdjacentHTML('beforeend', row);
+});
+}).catch(err => console.error('Toss sync skip or error:', err));
+});
+</script>
+
 </body>
 </html>

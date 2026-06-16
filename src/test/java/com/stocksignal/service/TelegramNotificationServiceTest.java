@@ -1,20 +1,21 @@
 package com.stocksignal.service;
 
+import com.stocksignal.entity.SystemConfig;
+import com.stocksignal.repository.SystemConfigRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TelegramNotificationServiceTest {
@@ -22,17 +23,25 @@ class TelegramNotificationServiceTest {
     @Mock
     private RestTemplate restTemplate;
 
+    @Mock
+    private SystemConfigRepository configRepository;
+
     private TelegramNotificationService service;
+
+    private SystemConfig mockConfig;
 
     @BeforeEach
     void setUp() {
-        service = new TelegramNotificationService(restTemplate);
+        service = new TelegramNotificationService(restTemplate, configRepository);
+        mockConfig = new SystemConfig();
+        // 동적 설정 조회 기능에 대한 무결성 모킹 스텁 정의
+        when(configRepository.findById(1L)).thenReturn(Optional.of(mockConfig));
     }
 
     @Test
     void sendMessage_doesNotCallApiWhenConfigurationIsMissing() {
-        ReflectionTestUtils.setField(service, "botToken", "");
-        ReflectionTestUtils.setField(service, "chatId", "123456");
+        mockConfig.setTelegramBotToken("");
+        mockConfig.setTelegramChatId("123456");
 
         service.sendMessage("Signal ready");
 
@@ -41,22 +50,20 @@ class TelegramNotificationServiceTest {
 
     @Test
     void sendMessage_callsTelegramApiWhenConfigured() {
-        ReflectionTestUtils.setField(service, "botToken", "test-token");
-        ReflectionTestUtils.setField(service, "chatId", "123456");
+        mockConfig.setTelegramBotToken("test-token");
+        mockConfig.setTelegramChatId("123456");
 
         service.sendMessage("Buy AAPL at 182.50");
 
-        // RestTemplate 플레이스홀더 패턴 매칭 설정 동기화 완료
         String expectedUrl = "https://api.telegram.org/bot{token}/sendMessage?chat_id={chatId}&text={text}";
         verify(restTemplate).getForObject(expectedUrl, String.class, "test-token", "123456", "Buy AAPL at 182.50");
     }
 
     @Test
     void sendMessage_swallowRestClientException() {
-        ReflectionTestUtils.setField(service, "botToken", "test-token");
-        ReflectionTestUtils.setField(service, "chatId", "123456");
+        mockConfig.setTelegramBotToken("test-token");
+        mockConfig.setTelegramChatId("123456");
 
-        // 가변 인자 3개를 온전히 받아 예외를 터뜨리도록 정교화
         doThrow(new RestClientException("boom"))
                 .when(restTemplate)
                 .getForObject(anyString(), eq(String.class), anyString(), anyString(), anyString());
