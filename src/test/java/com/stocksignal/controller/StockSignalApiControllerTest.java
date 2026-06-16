@@ -44,7 +44,8 @@ class StockSignalApiControllerTest {
 
     private StockSignal buildSignal(String ticker, SignalType type, double price) {
         StockSignal s = new StockSignal(ticker, type, price, "note");
-        s.setCreatedAt(LocalDateTime.now());
+        s.setId(1L);
+        s.setCreatedAt(LocalDateTime.of(2026, 6, 16, 12, 0, 0));
         return s;
     }
 
@@ -77,12 +78,16 @@ class StockSignalApiControllerTest {
         when(telegramSignalParser.parse("BUY AAPL 182.50")).thenReturn(request);
         when(signalService.createSignal(request)).thenReturn(saved);
 
+        // 변경된 컨트롤러의 Map 반환 및 Enum->String 구조를 검증할 수 있도록 MockMvc 타겟 정정
         mockMvc.perform(post("/api/signals/webhook")
                         .contentType(MediaType.TEXT_PLAIN)
                         .content("BUY AAPL 182.50"))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.ticker").value("AAPL"))
-                .andExpect(jsonPath("$.signalType").value("BUY"));
+                .andExpect(jsonPath("$.signalType").value("BUY"))
+                .andExpect(jsonPath("$.price").value(182.50))
+                .andExpect(jsonPath("$.createdAt").value("2026-06-16T12:00:00"));
 
         verify(signalService).createSignal(request);
     }
