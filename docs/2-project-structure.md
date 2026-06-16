@@ -4,53 +4,92 @@
 
 ```text
 StockSignal-Web/
-├── .github/workflows/          # CI/CD 자동화 환경 
-│   ├── ci.yml                  # PR 발생 시 자동 빌드 및 Java CI 테스트 수행
-│   └── deploy.yml              # main 브랜치 푸시 시 Marp 발표 자료를 GitHub Pages로 자동 배포
-├── .vscode/                    # 에디터 설정 (Java 컴파일 독립 실행 모드 등)
-├── 1. requirements/            # 프로젝트 요구사항 설계 자산 관리 폴더
-│   └── REQUIREMENTS.md         # 기능적/비기능적 요구사항 상세 명세서
-├── 2. project_architecture_and_schedule/ # 프로젝트 관리 및 설계 문서 폴더
-│   └── Project_Architecture_and_Schedule.md # ◀ [확인] 본 문서가 위치한 경로입니다
-├── docs/                       # 프로젝트 시각 자료 및 발표 문서 집합
-│   ├── presentation.md         # Marp 기반 슬라이드 발표 자료
-│   ├── ERD.png                 # 데이터베이스 스키마 설계 다이어그램
-│   └── wireframe.png           # Figma 프로토타입 화면 설계도
-├── prompt/                     # AI 자산 아카이빙 폴더
-│   └── PROMPT.md               # AI 활용 프롬프트 및 엔지니어링 수행 로그
-├── src/                        # 소스 코드 메인 디렉토리
+├── .github/workflows/                 # CI/CD 자동화 환경 
+│   ├── ci.yml                         # PR 및 메인 브랜치 푸시 시 자동 빌드 및 Java CI 단위 테스트 수행
+│   └── deploy.yml                     # main 브랜치 반영 시 Marp 발표 자료를 GitHub Pages로 웹 배포
+├── .vscode/                           # 에디터 설정
+│   └── settings.json                  # Java 컴파일러 독립 실행 모드 및 IDE 개발 환경 통합 설정
+├── data/                              # 로컬 H2 파일 임베디드 데이터베이스 물리 보존 폴더
+│   ├── stocksignaldb.lock.db          # 파일 락 제어용 데이터베이스 파일
+│   ├── stocksignaldb.mv.db            # 실제 주식 신호, 유저, 메모가 영구 적재되는 MV 스토리지 파일
+│   └── stocksignaldb.trace.db         # DB 내부 트랜잭션 추적 및 정밀 이력 로그 파일
+├── docs/                              # 텀 프로젝트 소프트웨어 공학 설계 및 검증 산출물 서식군 (가이드라인 준수)
+│   ├── 0-project-overview.md          # 프로젝트 통합 개요 및 인/아웃오브스코프 정의서
+│   ├── 1-requirement-analysis.md      # 기능적/비기능적 26개 요구사항 분석 명세서
+│   ├── 2-project-structure.md         # 현 시스템 아키텍처 다이어그램 및 모듈 정의서
+│   ├── 3-feature-implementation.md    # 요구사항ID별 세부 구현 소스 경로 및 기술 명세서
+│   ├── 4-summary.md                   # 구현 요약 통계 수식, 팀원 기여도 명세 및 종합 회고록
+│   ├── 9-AI-prompts.md                # 개발 단계별 AI 프롬프트 목적, 이력 및 요구사항 매핑지
+│   ├── BROWSER_COMPATIBILITY_REPORT.md # 모던 웹 브라우저(Chrome, Edge, Safari) 호환성 검증 보고서
+│   └── presentation.md                # Marp 엔진 기반의 마크다운 슬라이드 발표 자료
+├── src/                               # 메인 비즈니스 소스 코드 및 통합 테스트 패키지
 │   ├── main/
 │   │   ├── java/com/stocksignal/
-│   │   │   ├── config/         # 인프라 공통 설정 (RestTemplate 빈 등록 등 AppConfig)
-│   │   │   ├── controller/     # [Controller Layer] HTTP 요청 매핑 및 뷰 포워딩
-│   │   │   │   ├── DashboardController.java    # Thymeleaf 대시보드 렌더링 제어
-│   │   │   │   └── StockSignalApiController.java # 외부 수신용 REST API 엔드포인트 제어
-│   │   │   ├── dto/            # [Data Transfer Object] 계층 간 데이터 교환 객체
-│   │   │   │   └── StockSignalRequest.java     # 수신 데이터 유효성 검증 DTO
-│   │   │   ├── entity/         # [Model Layer] ORM 매핑용 도메인 선언 계층
-│   │   │   │   ├── SignalType.java             # BUY / SELL 열거형 타입 고정
-│   │   │   │   └── StockSignal.java            # 매매 신호 JPA 테이블 매핑 엔티티
-│   │   │   ├── repository/     # [Model Layer] Spring Data JPA 기반 Repository 인터페이스
-│   │   │   │   └── StockSignalRepository.java  # 시간 정렬 및 조건 필터링 전용 CRUD 쿼리 수행
-│   │   │   ├── service/        # [Model Layer] 트랜잭션 단위의 핵심 비즈니스 로직
-│   │   │   │   ├── StockSignalService.java      # 수신 데이터 파싱 처리 및 알림 위임 로직
-│   │   │   │   └── TelegramNotificationService.java # 텔레그램 봇 API 비동기 실시간 전송 처리
-│   │   │   └── StockSignalApplication.java # Spring Boot 애플리케이션 메인 부트스트랩 클래스
+│   │   │   ├── config/                # 인프라 환경 설정 및 글로벌 보안 아키텍처 계층
+│   │   │   │   ├── AppConfig.java     # RestTemplate 런타임 빈 등록 및 공통 클라이언트 주입 설정
+│   │   │   │   └── SecurityConfig.java # Spring Security 웹 접근 제어 정책 및 비밀번호 BCrypt 암호화 설정
+│   │   │   ├── controller/            # [Presentation Layer] HTTP 요청 제어 및 라우팅 계층
+│   │   │   │   ├── DashboardController.java     # 대시보드 홈 및 모닝 브리핑 타임리프 화면 렌더링 제어
+│   │   │   │   ├── SettingsController.java      # 개인 계정 알림 인프라 설정 변경 폼 엔드포인트 제어
+│   │   │   │   ├── StockSignalApiController.java # 파이썬 봇 연동 웹훅 수신 및 비동기 메모/삭제 REST API 처리
+│   │   │   │   ├── TestUiController.java        # 백엔드 데이터 결합 전 시나리오 검증용 모의 목업 컨트롤러
+│   │   │   │   ├── TossAssetController.java     # 토스증권 API 연동 국내/해외 잔고 holdings 웹 화면 매핑
+│   │   │   │   └── TossPortfolioApiController.java # 토스증권 금융 포트폴리오 자산 전송 비동기 REST API 컨트롤러
+│   │   │   ├── dto/                   # 계층 간 유효성 검증용 데이터 전송 객체 패키지
+│   │   │   │   ├── DashboardStatisticsDto.java  # 메인 관제 위젯 출력용 통계 집계 통합 전달 DTO
+│   │   │   │   ├── SignalStatistics.java        # 알고리즘 엔진 계산 통계 속성 DTO
+│   │   │   │   └── StockSignalRequest.java      # 외부 유입 텍스트 매매 파싱용 페이로드 규격 검증 DTO
+│   │   │   ├── entity/                # [Persistence Layer] 하이버네이트 ORM 엔티티 계층
+│   │   │   │   ├── MorningBriefing.java         # 시장 요약 및 당일 이슈 브리핑 영속성 데이터 객체
+│   │   │   │   ├── SignalMemo.java              # 매매 시그널별 일대다(1:N) 관계형 투자 메모 객체
+│   │   │   │   ├── SignalType.java              # BUY(매수) / SELL(매도) 도메인 고정 트레이딩 열거형
+│   │   │   │   ├── StockSignal.java             # 주식 매매 체결 신호 정보 영속화 매스트 테이블 객체
+│   │   │   │   ├── SystemConfig.java            # 시스템 런타임 영속성 설정 정의 객체
+│   │   │   │   └── User.java                    # 로그인 마스터 정보 및 개인화 텔레그램 토큰 테이블 객체
+│   │   │   ├── exception/             # 아키텍처 예외 처리 인프라 계층
+│   │   │   │   └── GlobalExceptionHandler.java  # 시스템 전역 컨트롤러 트랜잭션 장애 제어 인터셉터 허브
+│   │   │   ├── repository/            # [Persistence Layer] Spring Data JPA 레포지토리 계층
+│   │   │   │   ├── MorningBriefingRepository.java
+│   │   │   │   ├── SignalMemoRepository.java    # 일대다 메모 로우 CRUD 쿼리 처리
+│   │   │   │   ├── StockSignalRepository.java   # 과거순/최신순 시계열 융합 주식 동적 검색 쿼리 수행
+│   │   │   │   ├── SystemConfigRepository.java
+│   │   │   │   └── UserRepository.java          # 회원 자격 검증 및 커스텀 토큰 정보 갱신 처리
+│   │   │   ├── scheduler/             # 배치 무인 동기화 스케줄러 계층
+│   │   │   │   └── MorningBriefingScheduler.java # 리눅스 크론탭(@Scheduled) 기반 매일 아침 8시 자동 리포트 점화기
+│   │   │   ├── service/               # [Business Logic Layer] 핵심 컴포넌트 서비스 계층
+│   │   │   │   ├── MorningBriefingService.java  # 장 시작 전 전일 통계 및 증시 리포트 빌드 컴포넌트
+│   │   │   │   ├── SignalStatisticsService.java # FSM 기반 승률, 누적수익률 정밀 산출 알고리즘 연산 서비스
+│   │   │   │   ├── StockSignalService.java      # 데이터 수집 모니터링, @Retryable 방어선 구축 및 통계 총괄 제어
+│   │   │   │   ├── TelegramNotificationService.java # 설정 테이블 기반의 실시간 사용자 동적 알림 발송 처리
+│   │   │   │   ├── TossApiService.java          # 토스증권 통신 엔드포인트 디스패치 및 401 에러 캐시클리어 폴백 제어
+│   │   │   │   ├── TossOpenApiService.java      # 오픈 API 금융 데이터 수집 규격 추상화 인터페이스
+│   │   │   │   └── TossTokenManager.java        # 스레드세이프(synchronized) 인메모리 독점 토큰 캐싱 매니저
+│   │   │   ├── util/                  # 아키텍처 범용 금융 유틸리티 패키지
+│   │   │   │   └── TelegramSignalParser.java    # 정규식 패턴 그룹화를 활용한 이중 매칭 주식 데이터 파싱 엔진
+│   │   │   └── StockSignalApplication.java     # Spring Boot 웹 애플리케이션 기동 마스터 메인 클래스
 │   │   └── resources/
-│   │       ├── static/css/     # 정적 스타일시트 에셋 디렉토리
-│   │       │   └── style.css   # 메인 레이아웃 및 컴포넌트 전용 스타일
-│   │       ├── templates/      # [View Layer] Thymeleaf 템플릿 엔진 전용 디렉토리
-│   │       │   └── dashboard.html # 요약 카드 및 통계 테이블 데이터 바인딩 화면
-│   │       └── application.properties # H2 인메모리 DB 설정 및 환경 변수 파일
-│   └── test/                   # JUnit5 및 Mockito 통합 테스트 패키지
-│       └── java/com/stocksignal/
-│           ├── controller/     # API 및 대시보드 엔드포인트 단위 슬라이스 테스트
-│           ├── service/        # 비즈니스 로직 및 Mockito 빈 주입 통합 테스트
-│           └── StockSignalApplicationTest.java # 컨텍스트 로드 검증용 테스트
-├── .gitignore                  # Git 추적 대상에서 빌드 파일(target/) 및 IDE 설정 제외
-├── pom.xml                     # 의존성 주입(JPA, Thymeleaf) 및 Maven 빌드 파이프라인 관리
-├── README.md                   # 프로젝트 전체 통합 개요서 (In-Scope, Out-of-Scope 관리)
-└── LICENSE                     # 오픈소스 사용권 권한 명시 (MIT License)
+│   │       ├── static/css/            # 프론트엔드 정적 스타일시트 에셋 레이어
+│   │       │   └── style.css          # 고정식 네비바, 반응형 미디어쿼리, 글로벌 링스피너 컴포넌트 CSS
+│   │       ├── templates/             # [Presentation View Layer] 타임리프 템플릿 디렉토리
+│   │       │   ├── briefing.html      # AI 컴파일 오전 모닝 브리핑 출력 리포트 뷰 화면
+│   │       │   ├── dashboard.html     # 데이터 수집 모니터링창, 통계 카드, 실시간 비동기 조작 관제 화면
+│   │       │   ├── login.html         # 시큐리티 인터셉터 대응 계정 인증 로그인 독립 화면
+│   │       │   ├── register.html      # 표준 HTML 유효성 폼 전송 회원가입 독립 화면
+│   │       │   └── settings.html      # 개인 알림 토큰 및 토스증권 API 자격증명 수립 관리 설정 화면
+│   │       └── application.properties # H2 파일 DB 연결 인프라 소스 정보 및 봇 백업용 정적 설정 프로퍼티
+│   └── test/                          # JUnit5 및 Mockito 프레임워크 기반 통합/단위 슬라이스 테스트 패키지
+│       ├── java/com/stocksignal/
+│       │   ├── controller/            # MockMvc 기반 슬라이스 엔드포인트 및 목업 컴포넌트 연동 검증 테스트
+│       │   ├── scheduler/             # 무인 정시 크론 트리거 가동 정합성 테스트
+│       │   ├── service/               # Mockito 가짜 협력 객체 주입을 통한 단위 코어 비즈니스 로직 테스트
+│       │   ├── util/                  # 정규식 경계 조건 및 비정형 문자열 추출 파싱 정합성 테스트
+│       │   └── StockSignalApplicationTest.java # 컨텍스트 로딩 유실 검증 스프링 부트 통합 테스트
+│       └── resources/
+│           └── application-test.properties # 테스트 독립 가동용 격리 테스트 인메모리 스펙 설정 파일
+├── .gitignore                         # 빌드target/, .mv.db 로컬 저장소 및 IDE 캐시 Git 추적 원천 제외
+├── pom.xml                            # Spring Boot 및 금융 API 연동 의존성(Maven) 종합 빌드 명세 관리 파일
+├── README.md                          # 프로젝트 인/아웃오브스코프 가이드 및 원터치 구동 통합 가이드 개요서
+└── LICENSE                            # 오픈소스 사용 배포 권한 규격 명시 (MIT License)
 ```
 
 ---
