@@ -259,7 +259,6 @@ section {
 
 ---
 
----
 ## 금융 API 연동 아키텍처 (Toss Securities)
 <style scoped>
 section {
