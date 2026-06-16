@@ -4,12 +4,11 @@ theme: gaia
 paginate: true
 backgroundColor: #fff
 ---
-<!-- _class: lead -->
 # 프로젝트 개요
 
 ---
 
-## 1. 프로젝트 소개
+## 1. 프로젝트 소개 (1) : 개요 및 목적
 <style scoped>
 section {
   font-size: 27px;
@@ -29,7 +28,7 @@ StockSignal-Web (웹 기반 주식 매매 신호 및 대시보드 시스템)
 
 ---
 
-## 1. 프로젝트 소개
+## 1. 프로젝트 소개 (2) : 개선점 및 기대 효과
 <style scoped>
 section {
   font-size: 27px;
@@ -68,30 +67,40 @@ section {
 ---
 
 ## 3. 사용 기술 스택
+<style scoped>
+section {
+  font-size: 25px;
+}
+</style>
 
-- **언어**: Java 17, JavaScript, HTML, CSS
-- **프레임워크**: Spring Boot
-- **버전 관리**: Git & GitHub
+- **Back-end Core**: Java 17, Spring Boot, Spring Data JPA
+- **Security & Robustness**: Spring Security (BCrypt), Spring AOP (@Retryable)
+- **Database & Architecture**: Embedded H2 Database (File Mode)
+- **Infrastructure & Testing**: GitHub Actions (CI/CD), JUnit5, Logback
+- **Front-end**: Thymeleaf, JavaScript (Fetch API), HTML5, CSS3 (Media Queries)
 
 ---
 
 ## 4. 팀 구성 및 GitHub 저장소
-
+<style scoped>
+section {
+  font-size: 22px;
+}
+</style>
 ### 팀 구성원
 
 | 이름 | 학번 | 역할 |
 |---|---|---|
-| 노민우 | 20210579 | 팀장 / 백엔드 / API 설계 / DB 설계 |
-| 전지훈 | 20213051 | 프론트엔드 / UI 구현 / 테스트 및 문서화 |
+| **노민우** | 20210579 | 팀장 / 백엔드 코어 / API 설계 / 테스트 및 문서화 |
+| **전지훈** | 20213051 | 프론트엔드 UI·UX / 비동기 인터랙션 구현 / DB 스키마 설계 |
 
 ---
-<!-- _class: lead -->
 # 요구사항 분석 및 설계
 
 ---
 
 ## 1. 요구사항 정의
-### 기능적 요구사항
+### 기능적 요구사항 (1)
 <style scoped>
 section {
   font-size: 18px;
@@ -101,14 +110,14 @@ section {
 | 요구사항ID | 요구사항 명칭 | 상세 설명 | 우선순위 |
 | --- | --- | --- | --- |
 | REQ-F-001 | 텔레그램 신호 수신 및 파싱 | 파이썬 봇으로부터 전달받은 텍스트 신호에서 종목명, 가격, 신호종류(매수/매도)를 추출함 | P1 |
-| REQ-F-002 | 매매 신호 DB 저장 | 파싱된 정보를 MySQL 기반 데이터베이스에 영구적으로 저장하여 휘발성을 방지함 | P1 |
+| REQ-F-002 | 매매 신호 DB 저장 | 파싱된 정보를 데이터베이스에 영구적으로 저장하여 휘발성을 방지함 | P1 |
 | REQ-F-003 | 실시간 알림 재전송 | DB 저장과 동시에 사용자에게 텔레그램 API를 통해 즉시 알림을 재전송함 | P1 |
 | REQ-F-004 | 신호 이력 전체 조회 | 웹 페이지에서 과거부터 현재까지 저장된 모든 매매 신호 리스트를 출력함 | P1 |
 | REQ-F-005 | 종목별 필터링 검색 | 특정 종목명을 입력하여 해당 종목의 과거 매매 히스토리만 필터링하여 조회함 | P1 |
 
 ---
 
-### 기능적 요구사항 (계속)
+### 기능적 요구사항 (2)
 <style scoped>
 section {
   font-size: 18px;
@@ -125,7 +134,7 @@ section {
 
 ---
 
-### 기능적 요구사항 (계속 2)
+### 기능적 요구사항 (3)
 <style scoped>
 section {
   font-size: 18px;
@@ -142,7 +151,7 @@ section {
 
 ---
 
-### 비기능적 요구사항(UI 포함)
+### UI 요구사항
 <style scoped>
 section {
   font-size: 18px;
@@ -152,22 +161,23 @@ section {
 | 요구사항ID | 구분 | 요구사항 명칭 | 상세 설명 | 우선순위 |
 | --- | --- | --- | --- | --- |
 | REQ-U-001 | UI | 신호별 색상 구분 | 리스트에서 매수 신호는 빨간색, 매도 신호는 파란색으로 시각적 대비를 줌 | P1 |
-| REQ-U-002 | UI | 반응형 레이아웃 | PC 웹뿐만 아니라 직장인들이 이동 중 모바일로도 확인할 수 있도록 반응형 UI를 적용함 | P2 |
-| REQ-U-003 | UI | 데이터 로딩 상태 표시 | 대량의 이력을 불러올 때 스켈레톤 UI 또는 로딩 스피너를 노출하여 사용자 경험을 개선함 | P3 |
+| REQ-U-002 | UI | 반응형 레이아웃 | 직장인들이 이동 중 모바일로도 확인할 수 있도록 반응형 UI를 적용함 | P2 |
+| REQ-U-003 | UI | 데이터 로딩 상태 표시 | 대량의 이력을 불러올 때 스켈레톤 UI 또는 로딩 스피너를 노출하여 사용자 경험 개선 | P3 |
 | REQ-U-004 | UI | 네비게이션 사이드바 | 홈, 신호 이력, 모닝 브리핑 페이지 간 이동이 용이한 고정 메뉴를 제공함 | P2 |
-| REQ-NF-001 | 비기능 | 데이터 무결성 보장 | 신호 수집 중 오류 발생 시 재시도 로직을 통해 데이터 누락을 최소화함 | P1 |
+| REQ-U-005 | UI | 작업 결과 토스트 알림 | 메모 저장, 신호 삭제 등 비동기 작업 결과를 새로고침 없이 상단 배지로 피드백함 | P3 |
 
 ---
 
-### 비기능적 요구사항(UI 포함) (계속)
+### 비기능적 요구사항
 <style scoped>
 section {
-  font-size: 18px;
+  font-size: 16px;
 }
 </style>
 
 | 요구사항ID | 구분 | 요구사항 명칭 | 상세 설명 | 우선순위 |
 | --- | --- | --- | --- | --- |
+| REQ-NF-001 | 비기능 | 데이터 무결성 보장 | 신호 수집 중 오류 발생 시 재시도 로직을 통해 데이터 누락을 최소화함 | P1 |
 | REQ-NF-002 | 비기능 | API 응답 속도 | 웹 대시보드 리스트 호출 시 1초 이내에 데이터가 로딩되도록 성능을 최적화함 | P2 |
 | REQ-NF-003 | 비기능 | 시스템 로그 관리 | 신호 수신 실패나 DB 연결 오류 발생 시 원인을 파악할 수 있는 시스템 로그를 기록함 | P2 |
 | REQ-NF-004 | 비기능 | 확장 가능한 코드 구조 | 추후 증권사 주문 API 연동이 가능하도록 MVC 패턴을 준수하여 인터페이스를 설계함 | P2 |
@@ -186,14 +196,13 @@ section {
 ### 데이터 흐름도 (Data Flow Diagram)
 
 **[데이터 수집 및 적재]**
-```
-외부 파이썬 봇 → Telegram API → Spring Boot 서버 (수신 및 가공) → MySQL DB (저장)
-```
+외부 파이썬 봇 → Telegram API → Spring Boot 서버 (수신 및 가공) → H2 Database (로컬 저장)
 
 **[서비스 제공 및 조회]**
-```
-사용자 ↔ 웹 브라우저(UI) ↔ Spring Boot 서버 (비즈니스 로직) ↔ MySQL DB (조회)
-```
+
+사용자 ↔ 웹 브라우저(UI) ↔ Spring Boot 서버 (비즈니스 로직) ↔ H2 Database (조회)
+
+*※ 추후 고가용성 확장(HA) 및 운영계 배포 시 독립형 외부 RDBMS(MySQL)로 전환 설계 예정*
 
 ---
 
@@ -238,7 +247,7 @@ section {
 - **역할**: 핵심 비즈니스 로직 처리 및 DB 연동
 - **주요 구성**:
   - **Service**: 신호 파싱 유틸, 브리핑 생성 엔진, 알림 전송 로직
-  - **Repository**: MySQL 연동 및 CRUD 인터페이스
+  - **Repository**: H2 Database 연동 및 CRUD 인터페이스
   - **Entity**: 데이터 객체 정의 (StockSignal, User, MorningBriefing 등)
 
 ---
