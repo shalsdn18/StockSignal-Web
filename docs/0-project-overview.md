@@ -65,6 +65,7 @@
 | **REQ-U-001** | 신호별 색상 구분 | [#16](https://github.com/shalsdn18/StockSignal-Web/issues/34) | 🟢 완료 |
 | **REQ-U-002** | 반응형 레이아웃 | [#17](https://github.com/shalsdn18/StockSignal-Web/issues/35) | 🟢 완료 |
 | **REQ-U-003** | 데이터 로딩 상태 표시 | [#18](https://github.com/shalsdn18/StockSignal-Web/issues/36) | 🟢 완료 |
+| **REQ-U-004** | 네비게이션 사이드바 | [#18](https://github.com/shalsdn18/StockSignal-Web/issues/37) | 🟢 완료 |
 | **REQ-U-005** | 작업 결과 토스트 알림 | [#19](https://github.com/shalsdn18/StockSignal-Web/issues/38) | 🟢 완료 |
 | **REQ-NF-001** | 데이터 무결성 보장 | [#20](https://github.com/shalsdn18/StockSignal-Web/issues/39) | 🟢 완료 |
 | **REQ-NF-002** | API 응답 속도 최적화 | [#21](https://github.com/shalsdn18/StockSignal-Web/issues/40) | 🟢 완료 |
