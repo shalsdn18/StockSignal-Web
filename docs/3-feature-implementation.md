@@ -1,6 +1,6 @@
 # 3. 기능 구현 현황 및 상세 설명
 
-## 3.1 기능 구현 현황 (총 26개 요구사항 전수 검증)
+## 3.1 기능 구현 현황 (총 27개 요구사항 전수 검증)
 
 | 요구사항ID | 요구사항 명칭 | 상세 구현 파일 및 소스 경로 | 구현 여부 |
 | :--- | :--- | :--- | :---: |
@@ -23,6 +23,7 @@
 | **REQ-U-002** | 반응형 레이아웃 | `src/main/resources/static/css/style.css` (CSS 미디어 쿼리 레이어) | ☑ 완성 |
 | **REQ-U-003** | 데이터 로딩 상태 표시 | `src/main/resources/templates/dashboard.html` (비동기 글로벌 로딩 스피너) | ☑ 완성 |
 | **REQ-U-004** | 네비게이션 사이드바 | `src/main/resources/templates/dashboard.html` (고정형 `<aside>` 바) | ☑ 완성 |
+| **REQ-U-005** | 작업 결과 토스트 알림 | `src/main/resources/templates/dashboard.html` | ☑ 완성 |
 | **REQ-NF-001** | 데이터 무결성 보장 | `com.stocksignal.service.StockSignalService` (장애 전용 `@Retryable`) | ☑ 완성 |
 | **REQ-NF-002** | API 응답 속도 | `com.stocksignal.service.TossTokenManager` (인메모리 고속 캐싱 아키텍처) | ☑ 완성 |
 | **REQ-NF-003** | 시스템 로그 관리 | `src/main/resources/logback-spring.xml` 및 `@Slf4j` 추적 정형화 | ☑ 완성 |
@@ -154,25 +155,33 @@
 * **세부 기술 명세**:
   - 의미론적 시맨틱 마크업인 `<aside>` 블록 구조 내에 메뉴 링크 앵커 태그들을 수립하고 CSS 레이아웃 속성을 `position: fixed; height: 100vh; width: 260px;` 체계로 고정함. 본문 스크롤이 바닥으로 내려가도 네비게이션 바는 언제나 화면 좌측 레이어에 수려하게 고정 상주하도록 공간 정합성을 확보함.
 
-### 20) REQ-NF-001: 데이터 무결성 보장
+### 20) REQ-U-005: 작업 결과 토스트 알림
+* **소스 경로**: `src/main/resources/templates/dashboard.html`
+* **설명 요약**: 투자 전략 메모 저장 및 주식 시그널 행 삭제 등 비동기 HTTP 트랜잭션의 처리 결과 성공 및 실패 여부를 화면 전체 새로고침 없이 상단 독점 레이어 배지 형태로 사용자에게 실시간 피드백함.
+* **세부 기술 명세**:
+  - 웹 화면의 공간 정합성을 해치지 않도록 평소에는 비어있는 상태를 유지하는 `#toast-container` 엘리먼트를 수립하고, 고정 절대 배치 속성인 `position: fixed; top: 20px; right: 20px; z-index: 9999;`를 부여하여 화면 최상단에 상주하도록 레이아웃을 설계함.
+  - 비동기 `fetch API` 통신의 성공 및 실패 폴백(`catch`) 응답 컨텍스트 내에서 `showToast(message, type)` 자바스크립트 모듈을 트리거 격발하도록 구현함. `document.createElement('div')` 문법을 가동해 실시간으로 알림 블록을 생성하고 `toast--success` 또는 `toast--error` 클래스를 분기 결합하여 성공 시 다크그린, 에러 시 다크레드 톤 배지를 매핑함.
+  - CSS3 가속도 기술인 `@keyframes` 렌더링 프레임(`toastSlideIn`, `toastFadeOut`)을 유기적으로 관통 시켜 매끄러운 슬라이드 인-아웃 연출을 완성하고, 3초(`3000ms`) 경과 시 `removeChild` 가비지 컬렉션 메서드를 스스로 실행해 DOM(Document Object Model) 트리에서 자원을 자동 완전 소거(휘발)하는 고급 비동기 UX를 완결함.
+  - 
+### 21) REQ-NF-001: 데이터 무결성 보장
 * **소스 경로**: `com.stocksignal.service.StockSignalService` (장애 전용 `@Retryable` 아키텍처)
 * **설명 요약**: 수집용 외부 파이썬 자동 매매 봇 인터페이스 유입 단계에서 발생할 수 있는 일시적인 네트워크 순간 유실이나 데이터베이스 커넥션 풀 병목 현상을 완벽하게 방어함.
 * **세부 기술 명세**:
   - 스프링 AOP 인프라 코어 기술인 `@Retryable` 아키텍처를 비즈니스 메서드에 결합하여, 통신 결함 발생 시 자동으로 2초 간격 최대 3회 재시도를 무인으로 격발 처리함. 3회 연속 최종 실패 시 데드 레터(Dead Letter) 장애 로그를 생성하고 관리자가 정형화된 패턴으로 원인을 추적할 수 있도록 파일 어펜더(`FILE_WARN`)와 동기화하여 파일 시스템 내에 안전하게 보존하도록 구축함.
 
-### 21) REQ-NF-002: API 응답 속도
+### 22) REQ-NF-002: API 응답 속도
 * **소스 경로**: `com.stocksignal.service.TossTokenManager` (인메모리 고속 캐싱 아키텍처), `com.stocksignal.repository.StockSignalRepository`
 * **설명 요약**: 대량의 주식 수집 내역 적재 환경 및 금융 대시보드 새로고침 호출 시의 트래픽 디스크 I/O 병목을 물리적으로 제거하여 API 타임 응답률을 1초 미만대로 통제함.
 * **세부 기술 명세**:
   - 하드웨어 디스크 입출력 병목이 제로에 수렴하는 임베디드 H2 인메모리 데이터베이스 아키텍처 환경 위에 `stock_signal` 테이블 정렬용 인덱싱 명세를 주입함. 특히 속도가 느린 외부 금융 인프라 통신의 한계를 극복하기 위해 `TossTokenManager` 단에 원천 토큰 자격증명을 공유 인메모리 구조로 상시 캐싱하여 호출당 가동 응답 속도를 비약적으로 최적화 시킴.
 
-### 22) REQ-NF-003: 시스템 로그 관리
+### 23) REQ-NF-003: 시스템 로그 관리
 * **소스 경로**: `src/main/resources/logback-spring.xml` 및 각 컴포넌트 `@Slf4j` 추적 정형화 구역
 * **설명 요약**: 런타임 구동 환경에서 예기치 못한 원격 API 소켓 유실이나 하이버네이트 JPA 영속성 바인딩 오류 격발 시 원인을 단번에 역추적할 수 있는 엔터프라이즈 사양의 로깅 인프라를 통합 관리함.
 * **세부 기술 명세**:
   - `logback-spring.xml` 아키텍처의 레벨 분기 기법을 활용하여 일반 운영 정보는 `CONSOLE` 어펜더로 밀어내고, 시스템 치명 결함 요건인 `WARN` 및 `ERROR` 문자열은 시간별 보존 체계를 따르는 고유 로그 텍스트 파일 자산으로 별도 분리 포커싱하여 인프라 신뢰도를 확립함.
 
-### 23) REQ-NF-004: 확장 가능한 코드 구조
+### 24) REQ-NF-004: 확장 가능한 코드 구조
 * **소스 경로**: `com.stocksignal.service.TossTokenManager`, `com.stocksignal.service.TossApiService`, `com.stocksignal.controller.TossPortfolioApiController`, `com.stocksignal.controller.TossAssetController`
 * **설명 요약**: "추후 증권사 주문 API 연동이 가능하도록 표준 MVC 인터페이스를 설계한다"는 비기능적 요건을 확장하여, 실제 상용 토스증권 오픈 API 금융 인프라와의 연동 파이프라인을 선제 구축 완료함.
 * **세부 기술 명세**:
@@ -180,19 +189,19 @@
   - 계좌 식별자 동적 오토 바인딩: 사용자가 설정창 UI에서 `Toss Client ID/Secret`만 입력하면 백엔드가 `oauth2/token` 인증 성공 직후 연속적으로 토스 계좌 API를 호출하여 오픈 API 전용 계좌 식별 고유키(`accountSeq`)를 스스로 추출 및 바인딩 매핑하도록 완전 자동화 연동을 처리함.
   - 국장/해외 통합 잔고 및 마켓 데이터 허브: `ASSET` 그룹 및 `MARKET_DATA` 그룹 등 명세서 규격에 맞춘 HTTP Bearer Auth 인증 헤더 주입 및 실시간 401 Unauthorized 장애 예외 발생 시 인메모리 cache를 즉시 소거(`clearCache`)하고 재인증을 유기적으로 폴백 트리거하는 금융권 방어 코드를 성립함.
 
-### 24) REQ-NF-005: 비밀번호 암호화
+### 25) REQ-NF-005: 비밀번호 암호화
 * **소스 경로**: `com.stocksignal.config.SecurityConfig` (`BCryptPasswordEncoder` 빈 주입 구역)
 * **설명 요약**: 사용자 자산 설정 테이블 및 개인 계정 원천 데이터가 외부로 탈취되더라도 레인보우 테이블 대입 기법이나 복호화 계산으로 비밀번호가 노출되는 대형 사고를 완전 원천 봉쇄함.
 * **세부 기술 명세**:
   - 솔팅(Salting) 난수화 기술 및 다중 키 스트레칭 하드웨어 부하 연산 메커니즘을 내장한 `BCryptPasswordEncoder` 모듈을 자바 스프링 빈으로 등록하여 가동함. 가입 처리 시 패스워드를 단방향 다중 해싱 암호문으로 안전하게 트랜잭션을 하드코어하게 종결함.
 
-### 25) REQ-NF-006: 브라우저 호환성
+### 26) REQ-NF-006: 브라우저 호환성
 * **소스 경로**: `docs/BROWSER_COMPATIBILITY_REPORT.md` (동작 검증 일지 확인)
 * **설명 요약**: 크로스 브라우저 퍼블리싱 호환성 규칙을 만족하여 구글 크롬, MS 에지, 애플 사파리 등 다국적 사용자의 상이한 웹 엔진 환경 하에서도 완벽한 동일 화면 규격을 수립함.
 * **세부 기술 명세**:
   - 최신 웹 표준 CSS Flexbox 정렬 모델 및 자바스크립트 표준 Fetch API 모듈 프로토콜을 기반으로 프론트 UX 명세를 마감하여 크로스 렌더링 호환성을 입증하고, 관련 웹 검증 추적 분석 서식을 `BROWSER_COMPATIBILITY_REPORT.md` 보고서로 영구 보존함.
 
-### 26) REQ-NF-007: 자동 배포(CI/CD)
+### 27) REQ-NF-007: 자동 배포(CI/CD)
 * **소스 경로**: `.github/workflows/ci.yml`, `deploy.yml` (GitHub Actions 워크플로우 명세 구역)
 * **설명 요약**: 소프트웨어 형상 관리의 무결성을 도모하고 개발자가 코드를 리포지토리에 반영 시 빌드 파괴나 컴파일 크래시 에러를 자동으로 걸러주는 무인 배포 벨트를 장착함.
 * **세부 기술 명세**:
