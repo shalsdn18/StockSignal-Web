@@ -206,3 +206,12 @@
 * **설명 요약**: 소프트웨어 형상 관리의 무결성을 도모하고 개발자가 코드를 리포지토리에 반영 시 빌드 파괴나 컴파일 크래시 에러를 자동으로 걸러주는 무인 배포 벨트를 장착함.
 * **세부 기술 명세**:
   - 원격 깃허브 저장소 `main` 브랜치로 소스코드가 푸시되는 시나리오 발생 시 GitHub Actions 자동화 러너 가상 리눅스 컨테이너가 가동되도록 함. 가상 환경 내부에서 메이븐 코어 컴파일 명령인 `mvn clean test package` 명령 라인을 무인 구동하여 단위 통합 테스트를 완전 통과 시 자동 빌드 배포 자산화하도록 인프라를 가동함.
+
+### 28) Toss Securities Open API 연동 상세
+* **소스 경로**: `com.stocksignal.service.TossApiService`, `com.stocksignal.service.TossTokenManager`
+* **설명 요약**: 토스증권의 REST API(ASSET, MARKET_DATA, MARKET_INFO)를 통합 연동하여 실시간 주식 잔고, 현재가, 캔들 차트, 종목 정보 및 시장 운영 정보를 수집하는 엔진 구축.
+* **주요 기술적 해결 과제 및 구현**:
+    * **인증 토큰 동적 캐싱**: `TossTokenManager`를 통해 `access_token`의 만료 시간을 관리하고, 만료 60초 전 자동 갱신(Auto-Refresh) 로직을 `synchronized` 블록으로 구현하여 스레드 안전성(Thread-safety) 확보.
+    * **동적 계좌 바인딩**: 최초 1회 인증 시 `/accounts` API를 호출하여 민우님의 실계좌 일련번호(`accountSeq`)를 자동으로 파싱하고 `TossTokenManager`에 캐싱하여 이후 요청 시 헤더에 자동 주입.
+    * **파싱 레이어 최적화**: 토스 API 응답 구조인 `Root -> result -> items/candles` 구조에 맞춰 `RestTemplate` 응답 처리 로직을 범용적으로 재설계.
+    * **Market Data 통합**: 계좌 정보가 필요 없는 `MARKET_DATA` 및 `MARKET_INFO` 그룹의 엔드포인트 8종(현재가, 캔들, 환율, 장 운영 정보 등)을 서비스 레이어에 통합 구현하여 봇 및 대시보드 데이터 소스 일원화.

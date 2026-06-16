@@ -259,6 +259,25 @@ section {
 
 ---
 
+---
+## 금융 API 연동 아키텍처 (Toss Securities)
+<style scoped>
+section {
+  font-size: 22px;
+}
+</style>
+
+### 핵심 아키텍처: 싱글톤 토큰 매니저
+- **문제**: API 호출 시마다 매번 인증을 수행하면 요청 한도(Rate Limit) 초과 및 통신 병목 발생.
+- **해결**: `TossTokenManager`를 통한 인메모리 토큰 캐싱 및 자동 계좌 바인딩 로직 구현.
+
+### 파이프라인 구현 상세
+1. **Asset Layer**: 계좌 종속 데이터(잔고) 조회 (X-Tossinvest-Account 헤더 주입)
+2. **Market Layer**: 시세 및 시장 운영 정보 조회 (계좌 헤더 면제, 토큰 단독 인증)
+3. **Robustness**: 401(인증 만료) 예외 발생 시 캐시 무효화 및 재시도 파이프라인(Retryable) 구축.
+
+---
+
 ### 화면 설계 (Wireframe)
 <style scoped>
 section {
