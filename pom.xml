@@ -19,12 +19,15 @@
     <name>StockSignal-Web</name>
     <description>Web-based stock buy/sell signal and morning briefing system</description>
 
-    <properties>
-        <java.version>25</java.version>
-        <spring-retry.version>2.0.10</spring-retry.version>
-        <byte-buddy.version>1.17.0</byte-buddy.version>
-        <mockito.version>5.16.0</mockito.version>
-    </properties>
+   <properties>
+    <java.version>25</java.version>
+    <spring-retry.version>2.0.10</spring-retry.version>
+    <byte-buddy.version>1.17.0</byte-buddy.version>
+    <mockito.version>5.16.0</mockito.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+   </properties>
 
     <dependencyManagement>
         <dependencies>
@@ -127,7 +130,11 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <jvmArguments>-Dfile.encoding=UTF-8</jvmArguments>
+                </configuration>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
