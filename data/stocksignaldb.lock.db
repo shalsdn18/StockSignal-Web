@@ -1,6 +1,6 @@
 #FileLock
-#Wed Jun 17 05:07:24 KST 2026
+#Wed Jun 17 06:31:12 KST 2026
 hostName=DESKTOP-O8BKRNO
-id=19ed20bb35781f3d397c3c166f10ea62c607a970f7a
+id=19ed258689b70d6089f00fe88e679c1b2c377d52dfd
 method=file
-server=192.168.0.10\:59152
+server=192.168.0.10\:50881
