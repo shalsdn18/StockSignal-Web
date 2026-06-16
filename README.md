@@ -46,17 +46,32 @@
 
 | 기능 ID | 기능 명칭 | 연결된 Issue | 상태 |
 | :--- | :--- | :--- | :--- |
-| **F-01** | 실시간 주식 데이터 수집 및 DB 저장 | [#1](https://github.com/shalsdn18/StockSignal-Web/issues/5) | ⚪ 대기 |
-| **F-02** | 텔레그램 실시간 알림 재전송 및 설정 | [#2](https://github.com/shalsdn18/StockSignal-Web/issues/6) | ⚪ 대기 |
-| **F-03** | 사용자 회원가입/로그인 및 보안 시스템 | [#3](https://github.com/shalsdn18/StockSignal-Web/issues/7) | ⚪ 대기 |
-| **F-04** | 신호 이력 조회 대시보드 및 상세 검색 UI | [#4](https://github.com/shalsdn18/StockSignal-Web/issues/8) | ⚪ 대기 |
-| **F-05** | 모닝 브리핑 자동 생성 및 대시보드 통계 | [#5](https://github.com/shalsdn18/StockSignal-Web/issues/9) | ⚪ 대기 |
-| **F-06** | 투자 메모 작성 기능 및 반응형 UI 개선 | [#6](https://github.com/shalsdn18/StockSignal-Web/issues/10) | ⚪ 대기 |
-| **U-01** | 반응형 레이아웃 및 내비게이션 시스템 구축 | [#7](https://github.com/shalsdn18/StockSignal-Web/issues/11) | ⚪ 대기 |
-| **NF-01** | 사용자 보안(암호화) 및 MVC 아키텍처 준수 | [#8](https://github.com/shalsdn18/StockSignal-Web/issues/12) | ⚪ 대기 |
-| **NF-02** | API 성능 최적화 및 시스템 로그 관리 체계 | [#9](https://github.com/shalsdn18/StockSignal-Web/issues/13) | ⚪ 대기 |
-| **NF-03** | CI/CD 배포 자동화 및 브라우저 호환성 검증 | [#10](https://github.com/shalsdn18/StockSignal-Web/issues/14) | ⚪ 대기 |
----
+| **REQ-F-001** | 텔레그램 신호 수신 및 파싱 | [#1](https://github.com/shalsdn18/StockSignal-Web/issues/19) | 🟢 완료 |
+| **REQ-F-002** | 매매 신호 DB 저장 | [#2](https://github.com/shalsdn18/StockSignal-Web/issues/20) | 🟢 완료 |
+| **REQ-F-003** | 실시간 알림 재전송 | [#3](https://github.com/shalsdn18/StockSignal-Web/issues/21) | 🟢 완료 |
+| **REQ-F-004** | 신호 이력 전체 조회 | [#4](https://github.com/shalsdn18/StockSignal-Web/issues/22) | 🟢 완료 |
+| **REQ-F-005** | 종목별 필터링 검색 | [#5](https://github.com/shalsdn18/StockSignal-Web/issues/23) | 🟢 완료 |
+| **REQ-F-006** | 기간별 조회 기능 | [#6](https://github.com/shalsdn18/StockSignal-Web/issues/24) | 🟢 완료 |
+| **REQ-F-007** | 신호 종류별 정렬 | [#7](https://github.com/shalsdn18/StockSignal-Web/issues/25) | 🟢 완료 |
+| **REQ-F-008** | 모닝 브리핑 자동 생성 | [#8](https://github.com/shalsdn18/StockSignal-Web/issues/26) | 🟢 완료 |
+| **REQ-F-009** | 브리핑 웹 페이지 노출 | [#9](https://github.com/shalsdn18/StockSignal-Web/issues/27) | 🟢 완료 |
+| **REQ-F-010** | 투자 전략 메모 작성 | [#10](https://github.com/shalsdn18/StockSignal-Web/issues/28) | 🟢 완료 |
+| **REQ-F-011** | 신호 데이터 삭제/편집 | [#11](https://github.com/shalsdn18/StockSignal-Web/issues/29) | 🟢 완료 |
+| **REQ-F-012** | 대시보드 통계 계산 | [#12](https://github.com/shalsdn18/StockSignal-Web/issues/30) | 🟢 완료 |
+| **REQ-F-013** | 사용자 인증(Auth) | [#13](https://github.com/shalsdn18/StockSignal-Web/issues/31) | 🟢 완료 |
+| **REQ-F-014** | 사용자 설정 관리 | [#14](https://github.com/shalsdn18/StockSignal-Web/issues/32) | 🟢 완료 |
+| **REQ-F-015** | 데이터 수집 모니터링 | [#15](https://github.com/shalsdn18/StockSignal-Web/issues/33) | 🟢 완료 |
+| **REQ-U-001** | 신호별 색상 구분 | [#16](https://github.com/shalsdn18/StockSignal-Web/issues/34) | 🟢 완료 |
+| **REQ-U-002** | 반응형 레이아웃 | [#17](https://github.com/shalsdn18/StockSignal-Web/issues/35) | 🟢 완료 |
+| **REQ-U-003** | 데이터 로딩 상태 표시 | [#18](https://github.com/shalsdn18/StockSignal-Web/issues/36) | 🟢 완료 |
+| **REQ-U-005** | 작업 결과 토스트 알림 | [#19](https://github.com/shalsdn18/StockSignal-Web/issues/38) | 🟢 완료 |
+| **REQ-NF-001** | 데이터 무결성 보장 | [#20](https://github.com/shalsdn18/StockSignal-Web/issues/39) | 🟢 완료 |
+| **REQ-NF-002** | API 응답 속도 최적화 | [#21](https://github.com/shalsdn18/StockSignal-Web/issues/40) | 🟢 완료 |
+| **REQ-NF-003** | 시스템 로그 관리 | [#22](https://github.com/shalsdn18/StockSignal-Web/issues/41) | 🟢 완료 |
+| **REQ-NF-004** | 확장 가능한 코드 구조 | [#23](https://github.com/shalsdn18/StockSignal-Web/issues/42) | 🟢 완료 |
+| **REQ-NF-005** | 비밀번호 암호화 적용 | [#24](https://github.com/shalsdn18/StockSignal-Web/issues/43) | 🟢 완료 |
+| **REQ-NF-006** | 브라우저 호환성 검증 | [#25](https://github.com/shalsdn18/StockSignal-Web/issues/44) | 🟢 완료 |
+| **REQ-NF-007** | 자동 배포 (CI/CD) 파이프라인 구축 | [#26](https://github.com/shalsdn18/StockSignal-Web/issues/45) | 🟢 완료 |
 
 ## GitHub 협업 관리 방침
 
